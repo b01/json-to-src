@@ -14,7 +14,7 @@ Speicifically it will convert:
 ### Installation
 ```json
 "require": {
-    "kshabazz/battlenet-d3": "^1.2"
+    "kshabazz/json-to-phpsrc": "dev-master"
 }
 ```
 or
