@@ -16,13 +16,15 @@
             "Jtp\\Tests\\": "tests/Jtp/"
         }
     },
+    "bin": ["bin/jtp.php"],
     "description": "A program to convert JSON file to PHP source code.",
     "keywords": ["json", "php", "converter", "source", "code", "tool", "utility"],
     "license": "MIT",
     "name": "kshabazz/json-to-phpsrc",
     "require": {
         "php": ">=7.0",
-        "twig/twig": "^1.0"
+        "twig/twig": "^1.0",
+        "ulrichsg/getopt-php": "^2.0"
     },
     "require-dev": {
         "phpunit/phpunit": "^5.0"
