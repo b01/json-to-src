@@ -54,7 +54,7 @@ class TwigTools extends Twig_Extension
                 'getFullNameSpace',
                 [$this, 'getFullNameSpace']
             ),
-            'setProperty' => new Twig_SimpleFilter(
+            'setProperty' => new Twig_SimpleFunction(
                 'setProperty',
                 [$this, 'setProperty']
             )
@@ -88,10 +88,17 @@ class TwigTools extends Twig_Extension
      */
     public function setProperty($property, $value, $type)
     {
+        $return = '';
+
         if ($type === 'string') {
             $value = '"' . $value . '"';
         }
-        return sprintf('$this->%s = %s;', $property, $value);
+
+        if (!empty($value)) {
+            $return = "        " . sprintf('$this->%s = %s;', $property, $value) . "\n";
+        }
+
+        return $return;
     }
 }
 ?>

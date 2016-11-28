@@ -1,5 +1,5 @@
 <?php {%- if classNamespace is not empty %} namespace {{classNamespace}};{% endif %}
-
+{% autoescape false %}
 {% set fullClassName = getFullNameSpace(classNamespace, className) %}
 
 /**
@@ -23,7 +23,6 @@ class {{className}}
         {% for classProp in classProperties -%}
         {{ setProperty(classProp.name, classProp.value, classProp.type) }}
         {%- endfor %}
-
     }
     {% for classProp in classProperties %}
 
@@ -51,5 +50,5 @@ class {{className}}
     }
     {% endfor %}
 
-}
+}{% endautoescape %}
 ?>
