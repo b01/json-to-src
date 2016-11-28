@@ -19,11 +19,9 @@ class {{className}}
      */
     public function __construct()
     {
-    {% for classProp in classProperties -%}
-        {% if classProp.value is not empty -%}
-        $this->{{classProp.name}} = {{classProp.value}};
-        {%- endif %}
-    {%- endfor %}
+        {% for classProp in classProperties -%}
+        {% if classProp.value is not empty %}$this->{{classProp.name}} = {{classProp.value}};{% endif %}
+        {%- endfor %}
 
     }
     {% for classProp in classProperties %}

@@ -157,6 +157,7 @@ class Converter
      *
      * @param string $directory Directory to save the files.
      * @return void
+     * @throws \Jtp\JtpException
      */
     public function save(string $directory)
     {

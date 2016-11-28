@@ -247,5 +247,82 @@ class ConverterTest extends \PHPUnit_Framework_TestCase
         $converter = new Converter($jsonFile, $className, $namespace);
         $converter->save('TEST_TEMP_DIR');
     }
+
+    /**
+     * @covers ::generateSource
+     * @covers ::setGenUnitTests
+     * @covers ::setUnitTestTemplate
+     * @uses \Jtp\Converter::__construct
+     * @uses \Jtp\Converter::generateSource
+     * @uses \Jtp\Converter::setClassTemplate
+     * @uses \Jtp\Converter::getProperties
+     * @uses \Jtp\Converter::parseClasses
+     */
+    public function testCanGenerateUnitTests()
+    {
+        $jsonFile = '{"prop":1234}';
+        $className = 'Test';
+        $namespace = 'T';
+
+        $this->mockTwigTemplate->expects($this->once())
+            ->method('render')
+            ->willReturn('test');
+
+        $mockTwigTemplate2  = $this->getMockBuilder(Twig_Template::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+
+        $mockTwigTemplate2->expects($this->once())
+            ->method('render')
+            ->willReturn('test');
+
+        $converter = new Converter($jsonFile, $className, $namespace);
+        $converter->setClassTemplate($this->mockTwigTemplate);
+        $converter->setUnitTestTemplate($mockTwigTemplate2);
+        $actual = $converter->generateSource();
+
+        $this->assertEquals('test', $actual['Test']);
+
+        unset($converter);
+    }
+
+    /**
+     * @covers ::setGenUnitTests
+     * @uses \Jtp\Converter::__construct
+     * @uses \Jtp\Converter::generateSource
+     * @uses \Jtp\Converter::setClassTemplate
+     * @uses \Jtp\Converter::getProperties
+     * @uses \Jtp\Converter::parseClasses
+     * @uses \Jtp\Converter::generateSource
+     * @uses \Jtp\Converter::setGenUnitTests
+     * @uses \Jtp\Converter::setUnitTestTemplate
+     */
+    public function testCanTurnOffGenerateOfUnitTests()
+    {
+        $jsonFile = '{"prop":1234}';
+        $className = 'Test';
+        $namespace = 'T';
+
+        $this->mockTwigTemplate->expects($this->once())
+            ->method('render')
+            ->willReturn('test');
+
+        $mockTwigTemplate2  = $this->getMockBuilder(Twig_Template::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+
+        $mockTwigTemplate2->expects($this->never())
+            ->method('render');
+
+        $converter = new Converter($jsonFile, $className, $namespace);
+        $converter->setClassTemplate($this->mockTwigTemplate);
+        $converter->setUnitTestTemplate($mockTwigTemplate2);
+        $converter->setGenUnitTests(false);
+        $actual = $converter->generateSource();
+
+        $this->assertEquals('test', $actual['Test']);
+
+        unset($converter);
+    }
 }
 ?>
