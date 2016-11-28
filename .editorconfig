@@ -1,0 +1,17 @@
+[*]
+end_of_line = lf
+insert_final_newline = false
+max_line_length = 120
+
+[*.{txt,md}]
+max_line_length = 80
+
+[*.{txt,md}]
+trim_trailing_whitespace = false
+
+[*.{php,twig}]
+charset = utf-8
+indent_style = space
+tab_width = 4
+trim_trailing_whitespace = true
+continuation_indent_size = 4

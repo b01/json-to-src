@@ -1,0 +1,39 @@
+<?php {%- if classNamespace is not empty %} namespace {{classNamespace}}\Tests; {% endif %}
+
+{% set fullClassName = "#{classNamespace}\\#{className}" %}
+
+use {{fullClassName}};
+
+/**
+ * Class {{className}}Test
+ *
+ * @coversDefaultClass \{{fullClassName}}
+ */
+class {{className}}Tests
+{
+    {% for classProp in classProperties %}
+
+    /**
+     * @covers ::get{{classProp.name|capitalize}}
+     * @covers ::set{{classProp.name|capitalize}}
+     * @uses \{{fullClassName}}::__construct
+     */
+    public function testCanSetAndGet{{classProp.name|capitalize }}()
+    {
+        $subject = new {{className}}();
+
+        $subject->set{{classProp.name|capitalize}}({{classProp.value}});
+        $actual = $subject->get{{classProp.name|capitalize}}();
+        {% if classProp.type is same as('NULL') -%}
+            $this->assertNull($actual);
+        {%- elseif classProp.type is same as('string') -%}
+            $this->assertEquals('{{classProp.value}}', $actual);
+        {%- else -%}
+            $this->assertEquals({{classProp.value}}, $actual);
+        {% endif %}
+
+    }
+    {% endfor %}
+
+}
+?>

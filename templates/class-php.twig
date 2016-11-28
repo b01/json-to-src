@@ -1,0 +1,55 @@
+<?php {%- if classNamespace is not empty %} namespace {{classNamespace}};{% endif %}
+
+
+/**
+ * Class {{className}}
+ */
+class {{className}}
+{
+    {%- for classProp in classProperties %}
+
+    /**
+     * @var {{classProp.paramType}}
+     */
+    private ${{classProp.name}};
+    {% endfor %}
+
+    /**
+     * {{className}} Constructor
+     */
+    public function __construct()
+    {
+    {% for classProp in classProperties -%}
+        {% if classProp.value is not empty -%}
+        $this->{{classProp.name}} = {{classProp.value}};
+        {%- endif %}
+    {%- endfor %}
+
+    }
+    {% for classProp in classProperties %}
+
+    /**
+     * Get {{classProp.name}}.
+     *
+     * @return {{classProp.type}}.
+     */
+    public function get{{classProp.name|capitalize }}()
+    {
+        return $this->{{classProp.name}};
+    }
+
+    /**
+     * Set {{classProp.name}}.
+     *
+     * @return {{classProp.type}}.
+     */
+    public function set{{classProp.name|capitalize}}({% if classProp.paramType is not empty %}{{classProp.paramType}} {% endif %}${{classProp.name}})
+    {
+        $this->{{classProp.name}} = ${{classProp.name}};
+
+        return $this;
+    }
+    {% endfor %}
+
+}
+?>

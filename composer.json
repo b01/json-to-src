@@ -1,0 +1,35 @@
+{
+    "authors": [
+        {
+            "name": "Khalifah Shabazz",
+            "homepage": "http://www.kshabazz.net/",
+            "role": "Designer, Developer"
+        }
+    ],
+    "autoload": {
+        "psr-4": {
+            "Jtp\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Jtp\\Tests\\": "tests/Jtp/"
+        }
+    },
+    "description": "A program to convert JSON file to PHP source code.",
+    "keywords": ["json", "php", "converter", "source", "code", "tool", "utility"],
+    "license": "MIT",
+    "name": "kshabazz/json-to-phpsrc",
+    "require": {
+        "php": ">=7.0",
+        "twig/twig": "^1.0"
+    },
+    "require-dev": {
+        "phpunit/phpunit": "^5.0"
+    },
+    "support": {
+        "issues": "https://github.com/b01/json-to-phpsrc/issues",
+        "source": "https://github.com/b01/json-to-phpsrc"
+    },
+    "type": "application"
+}

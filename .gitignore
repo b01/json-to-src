@@ -1,0 +1,13 @@
+# Directories
+#------------
+/.phpunit/
+/.vscode/
+/vendor/
+/nbproject/
+/cache/
+/tests/tmp/
+
+# Files
+#------
+/composer.lock
+/nbproject/private/
