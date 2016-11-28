@@ -14,7 +14,7 @@ echo PHP_EOL . 'FYI current working directory is: ' . getcwd() . PHP_EOL;
 // Command line opiton flags.
 $flags = ''
     . 'n::' // optional namespace.
-    . 'd::' // optional debug mode.
+    . 'd' // optional debug mode.
 ;
 
 // Allows us to c
@@ -53,9 +53,11 @@ if ($outDir === null) {
 }
 
 $namespace = getArg(-1, $indexArgs, 'n', $options, '');
+$debug = (bool) getArg(-1, $indexArgs, 'd', $options, false);
 
 try {
     $jsonString = file_get_contents($jsonFile);
+    Converter::setDebugMode($debug);
     $converter = new Converter($jsonString, $className, $namespace);
 
     $twigLoader = new Twig_Loader_Filesystem(__DIR__
