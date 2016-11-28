@@ -60,12 +60,17 @@ try {
     Converter::setDebugMode($debug);
     $converter = new Converter($jsonString, $className, $namespace);
 
+    // Use a template engine to generate source code string.
     $twigLoader = new Twig_Loader_Filesystem(__DIR__
         . DIRECTORY_SEPARATOR . '..'
         . DIRECTORY_SEPARATOR . 'templates'
     );
     $twig = new Twig_Environment($twigLoader);
+    // Load Twig custom filters and functions.
+    $twig->addExtension(new \Jtp\TwigTools());
+    // Load template for generating the class source code.
     $classTemplate = $twig->loadTemplate('class-php.twig');
+    // Load template for generating the class unit test source code.
     $unitTestTemplate = $twig->loadTemplate('class-unit-php.twig');
 
     $converter->setClassTemplate($classTemplate);

@@ -1,5 +1,6 @@
 <?php {%- if classNamespace is not empty %} namespace {{classNamespace}};{% endif %}
 
+{% set fullClassName = getFullNameSpace(classNamespace, className) %}
 
 /**
  * Class {{className}}
@@ -20,7 +21,7 @@ class {{className}}
     public function __construct()
     {
         {% for classProp in classProperties -%}
-        {% if classProp.value is not empty %}$this->{{classProp.name}} = {{classProp.value}};{% endif %}
+        {{ setProperty(classProp.name, classProp.value, classProp.type) }}
         {%- endfor %}
 
     }
@@ -39,7 +40,8 @@ class {{className}}
     /**
      * Set {{classProp.name}}.
      *
-     * @return {{classProp.type}}.
+     * @param {{classProp.type}} ${{classProp.name|ucfirst}}
+     * @return \{{fullClassName}}
      */
     public function set{{classProp.name|capitalize}}({% if classProp.paramType is not empty %}{{classProp.paramType}} {% endif %}${{classProp.name}})
     {

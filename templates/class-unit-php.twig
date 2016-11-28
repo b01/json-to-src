@@ -1,6 +1,6 @@
 <?php {%- if classNamespace is not empty %} namespace {{classNamespace}}\Tests; {% endif %}
 
-{% set fullClassName = "#{classNamespace}\\#{className}" %}
+{% set fullClassName = getFullNameSpace(classNamespace, className) %}
 
 use {{fullClassName}};
 

@@ -55,7 +55,7 @@ class JtpExceptionTest extends PHPUnit_Framework_TestCase
     {
         $error = new JtpException(-1);
         $expectedCode = 2;
-        $actual = $error->getMessageByCode($expectedCode, ['test1234']);
+        $actual = $error->getMessageByCode($expectedCode, ['test1234', 'test1234']);
 
         $this->assertContains('test1234', $actual);
     }

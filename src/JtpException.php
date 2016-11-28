@@ -29,7 +29,7 @@ class JtpException extends Exception
      */
     private static $errorMap = [
         self::UNKNOWN => 'An unknown error has occurred.',
-        self::BAD_JSON_DECODE => 'The decoded JSON does not contain any fields that can be converted to PHP: "%s".',
+        self::BAD_JSON_DECODE => 'The decoded JSON does not contain any fields that can be converted to PHP, with last JSON error: %s: JSON: "%s".',
         self::BAD_NAMESPACE => 'Invalid character(s) found when trying to use the namespace "%s".',
         self::BAD_CLASS_NAME => 'Invalid character(s) found when trying to use the class name "%s".',
         self::NOT_WRITEABLE => 'Directory is not writable: "%s".'

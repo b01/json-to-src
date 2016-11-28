@@ -82,20 +82,22 @@ class Converter
      * @param string $className
      * @param string $namespace
      * @param int $rLimit
+     * @param boolean $isPhp7
      * @throws JtpException
      */
     public function __construct(
         string $jsonString,
         string $className,
         string $namespace = '',
-        int $rLimit = 3
+        int $rLimit = 3,
+        $isPhp7 = false
     ) {
         $this->json = json_decode($jsonString);
 
         if (!$this->json instanceof stdClass) {
             throw new JtpException(
                 JtpException::BAD_JSON_DECODE,
-                [$jsonString]
+                [json_last_error_msg(), $jsonString]
             );
         }
 
@@ -118,9 +120,16 @@ class Converter
             'integer' => 'int',
             'boolean' => 'bool'
         ];
-
         $this->genUnitTests = true;
         $this->unitTests = [];
+
+        // Disable scaler type-hint for PHP < 7.
+        if (!$isPhp7) {
+            $this->typeMap['boolean'] = '';
+            $this->typeMap['double'] = '';
+            $this->typeMap['integer'] = '';
+            $this->typeMap['string'] = '';
+        }
     }
 
     /**
@@ -219,7 +228,7 @@ class Converter
                 'name' => str_replace('$', '', $property),
                 'type' => $type,
                 'paramType' => $paramType,
-                'value' => $value
+                'value' => is_array($value) ? '[]' : $value
             ];
         }
 
@@ -266,6 +275,13 @@ class Converter
 
         // Nested objects.
         foreach ($objectVars as $property => $value) {
+            // Handle arrays with stdClass elements.
+            if (is_array($value) && count($value) > 0) {
+                // Only the first stdClass found in an array will be used to
+                // build source code.
+                $value = array_pop($value);
+            }
+
             if (is_object($value)) {
                 $newClassName = ucfirst($property);
                 $newClass = get_object_vars($value);

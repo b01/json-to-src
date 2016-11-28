@@ -198,7 +198,7 @@ class ConverterTest extends \PHPUnit_Framework_TestCase
             $this->assertEquals($message, $actual);
         });
         Converter::setDebugMode(true);
-        $converter = new Converter($jsonFile, $className, $namespace);
+        $converter = new Converter($jsonFile, $className, $namespace, 3, true);
         $converter->setClassTemplate($this->mockTwigTemplate);
         $converter->generateSource();
         Converter::setDebugMode(false);
