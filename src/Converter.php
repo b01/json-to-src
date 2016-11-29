@@ -208,21 +208,25 @@ class Converter
         $properties = [];
 
         foreach ($objectVars as $property => $value) {
-            if (is_object($value)) {
-                continue;
-            }
-
             $type = gettype($value);
-            $paramType = array_key_exists($type, $this->typeMap)
+            $isCustomType = $type === 'object';
+
+            if ($isCustomType) {
+                $customType = ucfirst($property);
+                $type = $customType;
+                $paramType = $customType;
+            } else {
+                $paramType = array_key_exists($type, $this->typeMap)
                     ? $this->typeMap[$type]
                     : $type;
+            }
+
             $properties[] = [
                 'name' => str_replace(['$', '-'], '', $property),
-                // Use the values type, unless its an object, then use the
-                // property name as the type.
-                'type' => is_object($value) ? $property : $type,
+                'type' => $type,
+                'isCustomType' => $isCustomType,
                 'paramType' => $paramType,
-                'value' => is_array($value) ? '[]' : $value,
+                'value' => is_array($value) ? '[]' : $value
             ];
         }
 

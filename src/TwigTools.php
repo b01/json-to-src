@@ -64,9 +64,9 @@ class TwigTools extends Twig_Extension
                 'getFuncType',
                 [$this, 'getFuncType']
             ),
-            'setPropVal' => new Twig_SimpleFunction(
-                'setPropVal',
-                [$this, 'setPropVal']
+            'getPropStmt' => new Twig_SimpleFunction(
+                'getPropStmt',
+                [$this, 'getPropStmt']
             ),
             'getYear' => new Twig_SimpleFunction(
                 'getYear',
@@ -115,9 +115,10 @@ class TwigTools extends Twig_Extension
      * Get the function parameter type.
      *
      * @param array $property
+     * @param string $namespace
      * @return mixed|string
      */
-    public function getFuncType(array $property)
+    public function getFuncType(array $property, $namespace = '')
     {
         $output = $property['paramType'] . ' ';
 
@@ -129,20 +130,28 @@ class TwigTools extends Twig_Extension
             $output = '';
         }
 
+        // Prefix the namespace to custom types.
+        if ($property['isCustomType']) {
+            $output = '\\' . $namespace . '\\' . $output;
+        }
+
         return $output;
     }
 
     /**
      * Produce a string of $this->{property} = {value};
      *
-     * @param string $prop
+     * @param array $prop
      * @param string $value
      * @param string $type
      * @return string
      */
-    public function setPropVal($prop, $value, $type)
+    public function getPropStmt($prop)
     {
         $return = '';
+        $type = $prop['type'];
+        $value = $prop['value'];
+        $name = $prop['name'];
 
         if ($type === 'string') {
             $return = '"' . $value . '"';
@@ -152,11 +161,15 @@ class TwigTools extends Twig_Extension
             $return = '[]';
         }
 
+        if ($prop['isCustomType']) {
+            $return = 'null';
+        }
+
         if (!empty($value) && strtolower($type) === 'null') {
             $return = 'null';
         }
 
-        return PHP_EOL . '        $this->' .  $prop . ' = ' . $return . ';';
+        return PHP_EOL . '        $this->' .  $name . ' = ' . $return . ';';
     }
 }
 ?>

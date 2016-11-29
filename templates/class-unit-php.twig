@@ -22,8 +22,11 @@ class {{className}}Tests
     {
         $subject = new {{className}}();
 
+    {% if classProp.isCustomType %}
+    {% else %}
         $subject->set{{classProp.name|capitalize}}({{classProp.value}});
         $actual = $subject->get{{classProp.name|capitalize}}();
+
         {% if classProp.type is same as('NULL') -%}
             $this->assertNull($actual);
         {%- elseif classProp.type is same as('string') -%}
@@ -31,7 +34,7 @@ class {{className}}Tests
         {%- else -%}
             $this->assertEquals({{classProp.value}}, $actual);
         {% endif %}
-
+    {% endif %}
     }
     {% endfor %}
 

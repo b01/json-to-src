@@ -22,7 +22,7 @@ class {{className}}
     {
         {% spaceless %}
         {% for classProp in classProperties -%}
-            {{ setPropVal(classProp.name, classProp.value, classProp.type) }}
+            {{ getPropStmt(classProp) }}
         {%- endfor %}
         {% endspaceless %}
 
@@ -32,7 +32,7 @@ class {{className}}
     /**
      * Get {{classProp.name}}.
      *
-     * @return {{classProp.type}}.
+     * @return {{getFuncType(classProp, classNamespace)}}
      */
     public function get{{classProp.name|capitalize }}()
     {
@@ -42,10 +42,10 @@ class {{className}}
     /**
      * Set {{classProp.name}}.
      *
-     * @param {{getFuncType(classProp)}} ${{classProp.name}}
+     * @param {{getFuncType(classProp, classNamespace)}}${{classProp.name}}
      * @return \{{fullClassName}}
      */
-    public function set{{classProp.name|ucfirst}}({{getFuncType(classProp)}}${{classProp.name}})
+    public function set{{classProp.name|ucfirst}}({{getFuncType(classProp, classNamespace)}}${{classProp.name}})
     {
         $this->{{getAssignProp(classProp)}} = ${{classProp.name}};
 
