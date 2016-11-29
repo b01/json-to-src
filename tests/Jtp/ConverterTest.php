@@ -9,7 +9,7 @@ use Twig_Template;
  */
 class ConverterTest extends \PHPUnit_Framework_TestCase
 {
-    /** @var \Twig_Template|\PHPUnit_Framework_MockObject_MockBuilder */
+    /** @var \Twig_TemplateWrapper|\PHPUnit_Framework_MockObject_MockBuilder */
     private $mockTwigTemplate;
 
     public function setUp()

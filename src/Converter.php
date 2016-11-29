@@ -82,15 +82,13 @@ class Converter
      * @param string $className
      * @param string $namespace
      * @param int $rLimit
-     * @param boolean $isPhp7
      * @throws JtpException
      */
     public function __construct(
         string $jsonString,
         string $className,
         string $namespace = '',
-        int $rLimit = 3,
-        $isPhp7 = false
+        int $rLimit = 3
     ) {
         $this->json = json_decode($jsonString);
 
@@ -116,20 +114,14 @@ class Converter
         $this->classes = [];
         $this->sources = [];
         $this->typeMap = [
-            'NULL' => '',
+            'boolean' => 'bool',
+            'array' => 'array',
             'integer' => 'int',
-            'boolean' => 'bool'
+            'NULL' => ''
         ];
+
         $this->genUnitTests = true;
         $this->unitTests = [];
-
-        // Disable scaler type-hint for PHP < 7.
-        if (!$isPhp7) {
-            $this->typeMap['boolean'] = '';
-            $this->typeMap['double'] = '';
-            $this->typeMap['integer'] = '';
-            $this->typeMap['string'] = '';
-        }
     }
 
     /**
@@ -183,7 +175,7 @@ class Converter
     /**
      * Set template to generate class source.
      *
-     * @param type $template
+     * @param Twig_Template $template
      */
     public function setClassTemplate(Twig_Template $template)
     {
@@ -200,7 +192,7 @@ class Converter
         $this->genUnitTests = $bool;
     }
 
-    public function setUnitTestTemplate(\Twig_Template $template)
+    public function setUnitTestTemplate(Twig_Template $template)
     {
         $this->unitTestTemplate = $template;
     }
@@ -226,9 +218,11 @@ class Converter
                     : $type;
             $properties[] = [
                 'name' => str_replace('$', '', $property),
-                'type' => $type,
+                // Use the values type, unless its an object, then use the
+                // property name as the type.
+                'type' => is_object($value) ? $property : $type,
                 'paramType' => $paramType,
-                'value' => is_array($value) ? '[]' : $value
+                'value' => is_array($value) ? '[]' : $value,
             ];
         }
 

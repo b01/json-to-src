@@ -23,6 +23,9 @@ class {{className}}
         {% for classProp in classProperties -%}
         {{ setProperty(classProp.name, classProp.value, classProp.type) }}
         {%- endfor %}
+        {% spaceless %}
+            $this->{{ classProp.name }} = {{ classProp.value }};
+        {% endspaceless %}
     }
     {% for classProp in classProperties %}
 
@@ -42,9 +45,9 @@ class {{className}}
      * @param {{classProp.type}} ${{classProp.name|ucfirst}}
      * @return \{{fullClassName}}
      */
-    public function set{{classProp.name|capitalize}}({% if classProp.paramType is not empty %}{{classProp.paramType}} {% endif %}${{classProp.name}})
+    public function set{{classProp.name|ucfirst}}({{getFuncType(classProp)}}${{classProp.name}})
     {
-        $this->{{classProp.name}} = ${{classProp.name}};
+        $this->{{getAssignProp(classProp)}} = ${{classProp.name}};
 
         return $this;
     }
