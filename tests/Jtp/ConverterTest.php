@@ -282,8 +282,6 @@ class ConverterTest extends \PHPUnit_Framework_TestCase
         $actual = $converter->generateSource();
 
         $this->assertEquals('test', $actual['Test']);
-
-        unset($converter);
     }
 
     /**
@@ -321,8 +319,32 @@ class ConverterTest extends \PHPUnit_Framework_TestCase
         $actual = $converter->generateSource();
 
         $this->assertEquals('test', $actual['Test']);
+    }
 
-        unset($converter);
+    /**
+     * @covers ::parseClasses
+     * @uses \Jtp\Converter::__construct
+     * @uses \Jtp\Converter::generateSource
+     * @uses \Jtp\Converter::setClassTemplate
+     * @uses \Jtp\Converter::getProperties
+     * @uses \Jtp\Converter::parseClasses
+     * @uses \Jtp\Converter::generateSource
+     */
+    public function testCanGenSubObjects()
+    {
+        $jsonFile = '{"prop":[{"o2prop": 1234}]}';
+        $className = 'Test';
+        $namespace = 'T';
+
+        $this->mockTwigTemplate->expects($this->exactly(2))
+            ->method('render')
+            ->willReturn('test');
+
+        $converter = new Converter($jsonFile, $className, $namespace);
+        $converter->setClassTemplate($this->mockTwigTemplate);
+        $actual = $converter->generateSource();
+
+        $this->assertArrayHasKey('Prop', $actual);
     }
 }
 ?>

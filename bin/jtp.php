@@ -54,6 +54,7 @@ if ($outDir === null) {
 
 $namespace = getArg(-1, $indexArgs, 'n', $options, '');
 $debug = (bool) getArg(-1, $indexArgs, 'd', $options, false);
+$typeHints = (bool) getArg(-1, $indexArgs, 't', $options, false);
 
 try {
     $jsonString = file_get_contents($jsonFile);
@@ -67,7 +68,7 @@ try {
     );
     $twig = new Twig_Environment($twigLoader);
     // Load Twig custom filters and functions.
-    $twig->addExtension(new \Jtp\TwigTools());
+    $twig->addExtension(new \Jtp\TwigTools($typeHints));
     // Load template for generating the class source code.
     $classTemplate = $twig->loadTemplate('class-php.twig');
     // Load template for generating the class unit test source code.
