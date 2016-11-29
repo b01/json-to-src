@@ -26,7 +26,7 @@ Takes a stdClass object and produces PHP source code. Works recursively, so sub 
   ```
 
 Side-effect to note include:
-* "$" Will automatically remove keys, since that has special meaning in PHP.
+* Bad characters like "$,-" Will automatically be removed keys in the JSON file.
 * A field that is an array and has an object as it first element will result in
   a class being generated.
 * All objects found will produce a class file, the key will be used as the name.

@@ -42,7 +42,7 @@ class {{className}}
     /**
      * Set {{classProp.name}}.
      *
-     * @param {{classProp.type}} ${{classProp.name|ucfirst}}
+     * @param {{getFuncType(classProp)}} ${{classProp.name}}
      * @return \{{fullClassName}}
      */
     public function set{{classProp.name|ucfirst}}({{getFuncType(classProp)}}${{classProp.name}})

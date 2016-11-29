@@ -15,6 +15,7 @@ echo PHP_EOL . 'FYI current working directory is: ' . getcwd() . PHP_EOL;
 $flags = ''
     . 'n::' // optional namespace.
     . 'd' // optional debug mode.
+    . 't' // optional debug mode.
 ;
 
 // Allows us to c

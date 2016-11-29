@@ -217,7 +217,7 @@ class Converter
                     ? $this->typeMap[$type]
                     : $type;
             $properties[] = [
-                'name' => str_replace('$', '', $property),
+                'name' => str_replace(['$', '-'], '', $property),
                 // Use the values type, unless its an object, then use the
                 // property name as the type.
                 'type' => is_object($value) ? $property : $type,

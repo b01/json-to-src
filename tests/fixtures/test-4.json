@@ -1,0 +1,21 @@
+{
+    "company": "Woodrow",
+    "employees": [{
+        "id": 1,
+        "first_name": "Jane",
+        "last_name": "Doe"
+    },
+        {
+            "id": 2,
+            "first_name": "John",
+            "last_name": "Doe"
+        }
+    ],
+    "location": {
+        "type": "Point",
+        "coordinates": [-83.0466419, 42.3323378],
+        "city": "Detroit",
+        "state": "MI",
+        "zip_code": "48226"
+    }
+}
