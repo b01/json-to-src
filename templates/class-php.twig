@@ -20,12 +20,12 @@ class {{className}}
      */
     public function __construct()
     {
-        {% for classProp in classProperties -%}
-        {{ setProperty(classProp.name, classProp.value, classProp.type) }}
-        {%- endfor %}
         {% spaceless %}
-            $this->{{ classProp.name }} = {{ classProp.value }};
+        {% for classProp in classProperties -%}
+            {{ setPropVal(classProp.name, classProp.value, classProp.type) }}
+        {%- endfor %}
         {% endspaceless %}
+
     }
     {% for classProp in classProperties %}
 

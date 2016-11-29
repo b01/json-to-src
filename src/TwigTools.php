@@ -64,9 +64,9 @@ class TwigTools extends Twig_Extension
                 'getFuncType',
                 [$this, 'getFuncType']
             ),
-            'setProperty' => new Twig_SimpleFunction(
-                'setProperty',
-                [$this, 'setProperty']
+            'setPropVal' => new Twig_SimpleFunction(
+                'setPropVal',
+                [$this, 'setPropVal']
             ),
             'getYear' => new Twig_SimpleFunction(
                 'getYear',
@@ -135,24 +135,28 @@ class TwigTools extends Twig_Extension
     /**
      * Produce a string of $this->{property} = {value};
      *
-     * @param $property
-     * @param $value
-     * @param $type
+     * @param string $prop
+     * @param string $value
+     * @param string $type
      * @return string
      */
-    public function setProperty($property, $value, $type)
+    public function setPropVal($prop, $value, $type)
     {
         $return = '';
 
         if ($type === 'string') {
-            $value = '"' . $value . '"';
+            $return = '"' . $value . '"';
         }
 
-        if (!empty($value)) {
-            $return = "        " . sprintf('$this->%s = %s;', $property, $value) . "\n";
+        if ($type === 'array') {
+            $return = '[]';
         }
 
-        return $return;
+        if (!empty($value) && strtolower($type) === 'null') {
+            $return = 'null';
+        }
+
+        return PHP_EOL . '        $this->' .  $prop . ' = ' . $return . ';';
     }
 }
 ?>
