@@ -70,7 +70,7 @@ class Converter
      *
      * @param bool $debug
      */
-    static public function setDebugMode(bool $debug)
+    static public function setDebugMode($debug)
     {
         self::$debug = $debug;
     }
@@ -85,10 +85,10 @@ class Converter
      * @throws JtpException
      */
     public function __construct(
-        string $jsonString,
-        string $className,
-        string $namespace = '',
-        int $rLimit = 3
+        $jsonString,
+        $className,
+        $namespace = '',
+        $rLimit = 3
     ) {
         $this->json = json_decode($jsonString);
 
@@ -201,7 +201,7 @@ class Converter
      *
      * @param bool $bool
      */
-    public function setGenUnitTests(bool $bool)
+    public function setGenUnitTests($bool)
     {
         $this->genUnitTests = $bool;
     }
@@ -274,7 +274,7 @@ class Converter
      */
     private function parseClassData(
         array $objectVars,
-        string $className,
+        $className,
         array & $classes = []
     ) {
         static $rCount = 0;
@@ -328,7 +328,7 @@ class Converter
      */
     private function debugParseClasses(
         int $rCount,
-        string $className,
+        $className,
         array $properties
     ) {
         echo "recursion: $rCount" . PHP_EOL;
