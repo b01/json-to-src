@@ -76,8 +76,8 @@ class ConverterTest extends \PHPUnit_Framework_TestCase
     /**
      * @covers ::generateSource
      * @covers ::setClassTemplate
-     * @covers ::getProperties
-     * @covers ::parseClasses
+     * @covers ::parseProperty
+     * @covers ::parseClassData
      * @uses \Jtp\Converter::__construct
      */
     public function testWillGenerateSource()
@@ -107,8 +107,8 @@ class ConverterTest extends \PHPUnit_Framework_TestCase
     /**
      * @covers ::generateSource
      * @covers ::setClassTemplate
-     * @covers ::getProperties
-     * @covers ::parseClasses
+     * @covers ::parseProperty
+     * @covers ::parseClassData
      * @uses \Jtp\Converter::__construct
      */
     public function testWillGenerateSourceIncludeingSubClasses()
@@ -142,11 +142,11 @@ class ConverterTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
-     * @covers ::parseClasses
+     * @covers ::parseClassData
      * @uses \Jtp\Converter::__construct
      * @uses \Jtp\Converter::generateSource
      * @uses \Jtp\Converter::setClassTemplate
-     * @uses \Jtp\Converter::getProperties
+     * @uses \Jtp\Converter::parseProperty
      */
     public function testWillNotGoOverRecursionLimit()
     {
@@ -174,7 +174,7 @@ class ConverterTest extends \PHPUnit_Framework_TestCase
      * @covers ::isDebugOn
      * @covers ::setDebugMode
      * @covers ::debugParseClasses
-     * @covers ::parseClasses
+     * @covers ::parseClassData
      * @uses \Jtp\Converter::__construct
      * @uses \Jtp\Converter::generateSource
      * @uses \Jtp\Converter::setClassTemplate
@@ -194,7 +194,8 @@ class ConverterTest extends \PHPUnit_Framework_TestCase
             $message .= "recursion: 0" . PHP_EOL
                 . "className: Test" . PHP_EOL
                 . "properties:" . PHP_EOL
-                . "  int prop" . PHP_EOL . PHP_EOL;
+                . "  int prop" . PHP_EOL
+                . "  Test2 test2" . PHP_EOL . PHP_EOL;
             $this->assertEquals($message, $actual);
         });
         Converter::setDebugMode(true);
@@ -209,7 +210,7 @@ class ConverterTest extends \PHPUnit_Framework_TestCase
      * @uses \Jtp\Converter::__construct
      * @uses \Jtp\Converter::generateSource
      * @uses \Jtp\Converter::setClassTemplate
-     * @uses \Jtp\Converter::parseClasses
+     * @uses \Jtp\Converter::parseClassData
      */
     public function testCanSaveGeneratedSource()
     {
@@ -255,8 +256,8 @@ class ConverterTest extends \PHPUnit_Framework_TestCase
      * @uses \Jtp\Converter::__construct
      * @uses \Jtp\Converter::generateSource
      * @uses \Jtp\Converter::setClassTemplate
-     * @uses \Jtp\Converter::getProperties
-     * @uses \Jtp\Converter::parseClasses
+     * @uses \Jtp\Converter::parseProperty
+     * @uses \Jtp\Converter::parseClassData
      */
     public function testCanGenerateUnitTests()
     {
@@ -289,8 +290,8 @@ class ConverterTest extends \PHPUnit_Framework_TestCase
      * @uses \Jtp\Converter::__construct
      * @uses \Jtp\Converter::generateSource
      * @uses \Jtp\Converter::setClassTemplate
-     * @uses \Jtp\Converter::getProperties
-     * @uses \Jtp\Converter::parseClasses
+     * @uses \Jtp\Converter::parseProperty
+     * @uses \Jtp\Converter::parseClassData
      * @uses \Jtp\Converter::generateSource
      * @uses \Jtp\Converter::setGenUnitTests
      * @uses \Jtp\Converter::setUnitTestTemplate
@@ -322,12 +323,12 @@ class ConverterTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
-     * @covers ::parseClasses
+     * @covers ::parseClassData
      * @uses \Jtp\Converter::__construct
      * @uses \Jtp\Converter::generateSource
      * @uses \Jtp\Converter::setClassTemplate
-     * @uses \Jtp\Converter::getProperties
-     * @uses \Jtp\Converter::parseClasses
+     * @uses \Jtp\Converter::parseProperty
+     * @uses \Jtp\Converter::parseClassData
      * @uses \Jtp\Converter::generateSource
      */
     public function testCanGenSubObjects()

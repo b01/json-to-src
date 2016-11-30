@@ -132,7 +132,7 @@ class Converter
     public function generateSource()
     {
         $objectVars = get_object_vars($this->json);
-        $this->classes = $this->parseClasses($objectVars, $this->className);
+        $this->classes = $this->parseClassData($objectVars, $this->className);
 
         foreach ($this->classes as $className => $properties) {
             $this->sources[$className] = $this->classTemplate->render([
@@ -198,39 +198,44 @@ class Converter
     }
 
     /**
-     * Return an array of all the scaler types in the array
+     * Parse a JSON field and returns the following as array:
+     * * name - the name this values is assigned.
+     * * type - scalar, array, or custom class name
+     * * isCustomType - Indicate that the type is a user defined  class.
+     * * paramType - The string to use in a function signature or doc-block.
+     * * value - is_array($value) ? '[]' : $value
+     * * arrayType - When the value is an array of objects, this will contain the type.
      *
-     * @param array $objectVars
+     * @param array $property
+     * @param mixed $value
      * @return array
      */
-    private function getProperties(array & $objectVars)
+    private function parseProperty($property, $value)
     {
-        $properties = [];
+        $type = gettype($value);
+        $isCustomType = $type === 'object';
 
-        foreach ($objectVars as $property => $value) {
-            $type = gettype($value);
-            $isCustomType = $type === 'object';
-
-            if ($isCustomType) {
-                $customType = ucfirst($property);
-                $type = $customType;
-                $paramType = $customType;
-            } else {
-                $paramType = array_key_exists($type, $this->typeMap)
-                    ? $this->typeMap[$type]
-                    : $type;
-            }
-
-            $properties[] = [
-                'name' => str_replace(['$', '-'], '', $property),
-                'type' => $type,
-                'isCustomType' => $isCustomType,
-                'paramType' => $paramType,
-                'value' => is_array($value) ? '[]' : $value
-            ];
+        if ($isCustomType) {
+            $customType = ucfirst($property);
+            $type = $customType;
+            $paramType = $customType;
+        } else {
+            $paramType = array_key_exists($type, $this->typeMap)
+                ? $this->typeMap[$type]
+                : $type;
         }
+        $isAnArrayOfObjects = is_array($value)
+            && count($value) > 0
+            && is_object($value[0]);
 
-        return $properties;
+        return [
+            'name' => str_replace(['$', '-'], '', $property),
+            'type' => $type,
+            'isCustomType' => $isCustomType,
+            'paramType' => $paramType,
+            'value' => is_array($value) ? '[]' : $value,
+            'arrayType' => $isAnArrayOfObjects ? $property : ''
+        ];
     }
 
     /**
@@ -253,7 +258,7 @@ class Converter
      * @param array $classes
      * @return array
      */
-    private function parseClasses(
+    private function parseClassData(
         array $objectVars,
         string $className,
         array & $classes = []
@@ -264,33 +269,33 @@ class Converter
             return [];
         }
 
-        // Add properties.
-        $properties = $this->getProperties($objectVars);
+        // Loop through keys.
+        foreach ($objectVars as $key => $value) {
+            $keyProps = $this->parseProperty($key, $value);
+            $properties[] = $keyProps;
 
-        if (count($properties) > 0) {
-            $classes[$className] = $properties;
-        }
-
-        // Nested objects.
-        foreach ($objectVars as $property => $value) {
-            // Handle arrays with stdClass elements.
-            if (is_array($value) && count($value) > 0) {
-                // Only the first stdClass found in an array will be used to
-                // build source code.
+            // Build class from object in an array.
+            if (!empty($keyProps['arrayType'])) {
                 $value = array_pop($value);
+                $key = $keyProps['arrayType'];
             }
 
+            // Build class from a nested object.
             if (is_object($value)) {
-                $newClassName = ucfirst($property);
+                $newClassName = ucfirst($key);
                 $newClass = get_object_vars($value);
                 $rCount++;
-                $this->parseClasses(
+                $this->parseClassData(
                     $newClass,
                     $newClassName,
                     $classes
                 );
                 $rCount--;
             }
+        }
+
+        if (count($properties) > 0) {
+            $classes[$className] = $properties;
         }
 
         if (self::isDebugOn()) {

@@ -123,15 +123,15 @@ class TwigTools extends Twig_Extension
         $output = $property['paramType'] . ' ';
 
         if ($property['paramType'] == 'array'
-            && !empty($property['subType'])) {
-            $output = $property['subType'] . ' ';
+            && !empty($property['arrayType'])) {
+            $output = $property['arrayType'] . ' ';
         } else if (!$this->doScalarTypeHints && is_scalar($property['value'])) {
             // Remove scalar type hints.
             $output = '';
         }
 
         // Prefix the namespace to custom types.
-        if ($property['isCustomType']) {
+        if ($property['isCustomType'] && !empty($namespace)) {
             $output = '\\' . $namespace . '\\' . $output;
         }
 

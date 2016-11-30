@@ -50,11 +50,33 @@ class TwigToolsTest extends \PHPUnit_Framework_TestCase
             'name' => 'test',
             'type' => 'array',
             'paramType' => 'array',
-            'subType' => 'Test',
-            'value' => '[]'
+            'arrayType' => 'Test',
+            'value' => '[]',
+            'isCustomType' => true
         ];
         $expected = 'Test ';
         $actual = $tt->getFuncType($fixture);
+
+        $this->assertEquals($expected, $actual);
+    }
+
+    /**
+     * @covers ::getFuncType
+     * @covers ::__construct
+     */
+    public function testCanGetFunctionTypeForPropertyWithNamespace()
+    {
+        $tt = new TwigTools(true);
+        $fixture = [
+            'name' => 'test',
+            'type' => 'array',
+            'paramType' => 'array',
+            'arrayType' => 'Company',
+            'value' => '[]',
+            'isCustomType' => true
+        ];
+        $expected = '\\Tests\\Company ';
+        $actual = $tt->getFuncType($fixture, 'Tests');
 
         $this->assertEquals($expected, $actual);
     }
