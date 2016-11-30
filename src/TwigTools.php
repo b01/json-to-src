@@ -148,7 +148,7 @@ class TwigTools extends Twig_Extension
      */
     public function getPropStmt($prop)
     {
-        $return = '';
+        $return = 'null';
         $type = $prop['type'];
         $value = $prop['value'];
         $name = $prop['name'];
@@ -159,14 +159,6 @@ class TwigTools extends Twig_Extension
 
         if ($type === 'array') {
             $return = '[]';
-        }
-
-        if ($prop['isCustomType']) {
-            $return = 'null';
-        }
-
-        if (!empty($value) && strtolower($type) === 'null') {
-            $return = 'null';
         }
 
         return PHP_EOL . '        $this->' .  $name . ' = ' . $return . ';';

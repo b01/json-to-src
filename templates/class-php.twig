@@ -10,7 +10,8 @@ class {{className}}
     {%- for classProp in classProperties %}
 
     /**
-     * @var {{getFuncType(classProp, classNamespace)}}
+     * @var{% if classProp.paramType is not empty %} {{ classProp.paramType }}{% endif %}
+
      */
     private ${{classProp.name}};
     {% endfor %}
@@ -32,12 +33,15 @@ class {{className}}
     /**
      * Get {{classProp.name}}.
      *
-     * @return {{getFuncType(classProp, classNamespace)}}
+     * {% if classProp.paramType is not empty %}@return {{ classProp.paramType }}{% endif %}
+
      */
-    public function get{{classProp.name|capitalize }}()
+    public function get{{ classProp.name|ucfirst }}()
     {
-        return $this->{{classProp.name}};
+        return $this->{{ classProp.name }};
     }
+
+    {% if classProp.arrayType is not empty %}
 
     /**
      * Set {{classProp.name}}.
@@ -51,7 +55,24 @@ class {{className}}
 
         return $this;
     }
-    {% endfor %}
+    {% else %}
 
-}{% endautoescape %}
+    /**
+     * Set {{classProp.name}}.
+     *
+     * @param {{getFuncType(classProp, classNamespace)}}${{classProp.name}}
+     * @return \{{fullClassName}}
+     */
+    public function set{{classProp.name|ucfirst}}({{getFuncType(classProp, classNamespace)}}${{classProp.name}})
+    {
+        $this->{{getAssignProp(classProp)}} = ${{classProp.name}};
+
+        return $this;
+    }
+    {% endif %}
+    {%- endfor %}
+
+}
+{% endautoescape %}
+
 ?>
