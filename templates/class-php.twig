@@ -10,7 +10,7 @@ class {{className}}
     {%- for classProp in classProperties %}
 
     /**
-     * @var {{classProp.paramType}}
+     * @var {{getFuncType(classProp, classNamespace)}}
      */
     private ${{classProp.name}};
     {% endfor %}
