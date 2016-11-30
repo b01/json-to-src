@@ -101,7 +101,7 @@ class ConverterTest extends \PHPUnit_Framework_TestCase
         $converter->setClassTemplate($this->mockTwigTemplate);
         $actual = $converter->generateSource();
 
-        $this->assertEquals('test', $actual['Test']);
+        $this->assertEquals('test', $actual['classes']['Test']);
     }
 
     /**
@@ -111,7 +111,7 @@ class ConverterTest extends \PHPUnit_Framework_TestCase
      * @covers ::parseClassData
      * @uses \Jtp\Converter::__construct
      */
-    public function testWillGenerateSourceIncludeingSubClasses()
+    public function testWillGenerateSourceIncludingNestedClasses()
     {
         $jsonFile = '{"prop":1234, "test2":{"prop2":1234}}';
         $className = 'Test';
@@ -138,7 +138,7 @@ class ConverterTest extends \PHPUnit_Framework_TestCase
         $converter->setClassTemplate($this->mockTwigTemplate);
         $actual = $converter->generateSource();
 
-        $this->assertEquals('test', $actual['Test']);
+        $this->assertEquals('test', $actual['classes']['Test']);
     }
 
     /**
@@ -165,7 +165,7 @@ class ConverterTest extends \PHPUnit_Framework_TestCase
         $converter->setClassTemplate($this->mockTwigTemplate);
         $actual = $converter->generateSource();
 
-        $this->assertEquals('test', $actual['Test']);
+        $this->assertEquals('test', $actual['classes']['Test']);
 
         unset($converter);
     }
@@ -282,7 +282,7 @@ class ConverterTest extends \PHPUnit_Framework_TestCase
         $converter->setUnitTestTemplate($mockTwigTemplate2);
         $actual = $converter->generateSource();
 
-        $this->assertEquals('test', $actual['Test']);
+        $this->assertEquals('test', $actual['classes']['Test']);
     }
 
     /**
@@ -319,7 +319,7 @@ class ConverterTest extends \PHPUnit_Framework_TestCase
         $converter->setGenUnitTests(false);
         $actual = $converter->generateSource();
 
-        $this->assertEquals('test', $actual['Test']);
+        $this->assertEquals('test', $actual['classes']['Test']);
     }
 
     /**
@@ -345,7 +345,7 @@ class ConverterTest extends \PHPUnit_Framework_TestCase
         $converter->setClassTemplate($this->mockTwigTemplate);
         $actual = $converter->generateSource();
 
-        $this->assertArrayHasKey('Prop', $actual);
+        $this->assertArrayHasKey('Prop', $actual['classes']);
     }
 }
 ?>

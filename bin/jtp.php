@@ -14,6 +14,7 @@ echo PHP_EOL . 'FYI current working directory is: ' . getcwd() . PHP_EOL;
 // Command line opiton flags.
 $flags = ''
     . 'n::' // optional namespace.
+    . 'u::' // optional debug mode.
     . 'd' // optional debug mode.
     . 't' // optional debug mode.
 ;
@@ -56,6 +57,7 @@ if ($outDir === null) {
 $namespace = getArg(-1, $indexArgs, 'n', $options, '');
 $debug = (bool) getArg(-1, $indexArgs, 'd', $options, false);
 $typeHints = (bool) getArg(-1, $indexArgs, 't', $options, false);
+$unitTestDir = getArg(-1, $indexArgs, 'u', $options, null);
 
 try {
     $jsonString = file_get_contents($jsonFile);
@@ -78,7 +80,7 @@ try {
     $converter->setClassTemplate($classTemplate);
     $converter->setUnitTestTemplate($unitTestTemplate);
     $converter->generateSource();
-    $converter->save($outDir);
+    $converter->save($outDir, $unitTestDir);
     echo 'Done' . PHP_EOL;
 } catch (\Exception $error) {
     echo $error->getMessage() . PHP_EOL;

@@ -112,7 +112,10 @@ class Converter
         $this->namespace = $namespace;
         $this->recursionLimit = $rLimit;
         $this->classes = [];
-        $this->sources = [];
+        $this->sources = [
+            'classes' => [],
+            'tests' => []
+        ];
         $this->typeMap = [
             'boolean' => 'bool',
             'array' => 'array',
@@ -135,14 +138,14 @@ class Converter
         $this->classes = $this->parseClassData($objectVars, $this->className);
 
         foreach ($this->classes as $className => $properties) {
-            $this->sources[$className] = $this->classTemplate->render([
+            $this->sources['classes'][$className] = $this->classTemplate->render([
                 'className' => $className,
                 'classProperties' => $properties,
                 'classNamespace' => $this->namespace
             ]);
 
             if ($this->genUnitTests && $this->unitTestTemplate instanceof Twig_Template) {
-                $this->sources[$className . 'Test'] = $this->unitTestTemplate->render([
+                $this->sources['tests'][$className . 'Test'] = $this->unitTestTemplate->render([
                     'className' => $className,
                     'classProperties' => $properties,
                     'classNamespace' => $this->namespace
@@ -157,17 +160,28 @@ class Converter
      * Save PHP source files to disk.
      *
      * @param string $directory Directory to save the files.
+     * @param string $unitTestDir Specify a separate directory for unit tests.
      * @return void
      * @throws \Jtp\JtpException
      */
-    public function save(string $directory)
+    public function save($directory, $unitTestDir = null)
     {
         if (!is_writeable($directory)) {
             throw new JtpException(JtpException::NOT_WRITEABLE, [$directory]);
         }
 
-        foreach($this->sources as $className => $code) {
+        foreach($this->sources['classes'] as $className => $code) {
             $filename = $directory . DIRECTORY_SEPARATOR . $className . '.php';
+
+            file_put_contents($filename, $code);
+        }
+
+        if (!is_dir($unitTestDir)) {
+            $unitTestDir = $directory;
+        }
+        foreach($this->sources['tests'] as $className => $code) {
+            $filename = $unitTestDir . DIRECTORY_SEPARATOR . $className . '.php';
+
             file_put_contents($filename, $code);
         }
     }
