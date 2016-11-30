@@ -1,5 +1,10 @@
 ## Description
-Takes a stdClass object and produces PHP source code. Works recursively, so sub objects will be converted to classes as well.
+Convert JSON to PHP source code.
+
+This tool takes a JSON file, along with other required input, and on success
+will produce PHP files. It works recursively, and will parse nested keys where
+the value is an object. In addition, an array that contain objects will produce
+a class, but only one since all elements are assumed to be of the same type.
 
 ### Features
 * Turns fields into properties with getters and setters (fluent style).
@@ -30,6 +35,18 @@ Side-effect to note include:
 * A field that is an array and has an object as it first element will result in
   a class being generated.
 * All objects found will produce a class file, the key will be used as the name.
+
+Here's a rough idea of how it handles JSON types: 
+
+JSON | PHP
+---- | ---
+null | null
+123 | int
+1.00 | double (a.k.a float)
+"string" | string (no interpolation, ex: 'string')
+"Company": {} | class Company {}
+"Clients": [{"id":1}] | class Clients { private $id; getId,setId }
+
 
 ### Installation
 
