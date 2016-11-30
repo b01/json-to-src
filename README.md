@@ -30,7 +30,9 @@ a class, but only one since all elements are assumed to be of the same type.
   }
   ```
 
-Side-effect to note include:
+### Side-effect
+
+Some things to make note of when using this tool include:
 * Bad characters like "$,-" Will automatically be removed keys in the JSON file.
 * A field that is an array and has an object as it first element will result in
   a class being generated.
@@ -46,7 +48,6 @@ null | null
 "string" | string (no interpolation, ex: 'string')
 "Company": {} | class Company {}
 "Clients": [{"id":1}] | class Clients { private $id; getId,setId }
-
 
 ### Installation
 
