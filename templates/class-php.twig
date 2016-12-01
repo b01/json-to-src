@@ -10,8 +10,7 @@ class {{className}}
     {%- for classProp in classProperties %}
 
     /**
-     * @var{% if classProp.paramType is not empty %} {{ classProp.paramType }}{% endif %}
-
+     * {{ getVarType(classProp, classNamespace) }}
      */
     private ${{classProp.name}};
     {% endfor %}
@@ -33,7 +32,7 @@ class {{className}}
     /**
      * Get {{classProp.name}}.
      *
-     * {% if classProp.paramType is not empty %}@return {{ classProp.paramType }}{% endif %}
+     *{% if classProp.paramType is not empty %} @return {{ classProp.paramType }}{% endif %}
 
      */
     public function get{{ classProp.name|ucfirst }}()
@@ -46,7 +45,7 @@ class {{className}}
     /**
      * Set {{classProp.name}}.
      *
-     * @param {{getFuncType(classProp, classNamespace)}}${{classProp.name}}
+     * @param{% if classProp.paramType is not empty %} {{ classProp.paramType }} {% endif %}${{classProp.name}}
      * @return \{{fullClassName}}
      */
     public function set{{classProp.name|ucfirst}}({{getFuncType(classProp, classNamespace)}}${{classProp.name}})
@@ -60,7 +59,7 @@ class {{className}}
     /**
      * Set {{classProp.name}}.
      *
-     * @param {{getFuncType(classProp, classNamespace)}}${{classProp.name}}
+     * @param{% if classProp.paramType is not empty %} {{ classProp.paramType }} {% endif %}${{classProp.name}}
      * @return \{{fullClassName}}
      */
     public function set{{classProp.name|ucfirst}}({{getFuncType(classProp, classNamespace)}}${{classProp.name}})

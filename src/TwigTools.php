@@ -68,6 +68,10 @@ class TwigTools extends Twig_Extension
                 'getPropStmt',
                 [$this, 'getPropStmt']
             ),
+            'getVarType' => new Twig_SimpleFunction(
+                'getVarType',
+                [$this, 'getVarType']
+            ),
             'getYear' => new Twig_SimpleFunction(
                 'getYear',
                 function () {
@@ -154,7 +158,7 @@ class TwigTools extends Twig_Extension
         $name = $prop['name'];
 
         if ($type === 'string') {
-            $return = '"' . $value . '"';
+            $return = "'{$value}'";
         }
 
         if ($type === 'array') {
@@ -162,6 +166,27 @@ class TwigTools extends Twig_Extension
         }
 
         return PHP_EOL . '        $this->' .  $name . ' = ' . $return . ';';
+    }
+
+    /**
+     * Produce a string of $this->{property} = {value};
+     *
+     * @param array $prop
+     * @return string
+     */
+    public function getVarType(array $prop, $namespace)
+    {
+        $output = '';
+
+        if (!empty($prop['arrayType'])) {
+            $output = '@var '. $prop['paramType'] . ' of \\' . $namespace . '\\' . $prop['arrayType'];
+        } else if (!empty($prop['isCustomType'])) {
+            $output = '@var \\' . $namespace . '\\' . $prop['paramType'];
+        } else if (!empty($prop['paramType'])) {
+            $output = '@var ' . $prop['paramType'];
+        }
+
+        return $output;
     }
 }
 ?>
