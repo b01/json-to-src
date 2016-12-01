@@ -242,12 +242,20 @@ class Converter
             && count($value) > 0
             && is_object($value[0]);
 
+        if (is_array($value)) {
+            $val = '[]';
+        } else if (is_string($value)) {
+            $val = addslashes($value);
+        } else {
+            $val = $value;
+        }
+
         return [
             'name' => str_replace(['$', '-'], '', $property),
             'type' => $type,
             'isCustomType' => $isCustomType,
             'paramType' => $paramType,
-            'value' => is_array($value) ? '[]' : $value,
+            'value' => $val,
             'arrayType' => $isAnArrayOfObjects ? $property : ''
         ];
     }
