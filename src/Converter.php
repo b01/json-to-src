@@ -350,14 +350,16 @@ class Converter
             // Build class from a nested object.
             if (is_object($value)) {
                 $newClassName = ucfirst($key);
-                $newClass = get_object_vars($value);
-                $rCount++;
-                $this->parseClassData(
-                    $newClass,
-                    $newClassName,
-                    $classes
-                );
-                $rCount--;
+                $newObjectVars = get_object_vars($value);
+                if (count($newObjectVars) > 0) {
+                    $rCount++;
+                    $this->parseClassData(
+                        $newObjectVars,
+                        $newClassName,
+                        $classes
+                    );
+                    $rCount--;
+                }
             }
         }
 
