@@ -16,8 +16,8 @@
             "Jtp\\Tests\\": "tests/Jtp/"
         }
     },
-    "bin": ["bin/jtp.php"],
-    "description": "A program to convert JSON file to PHP source code.",
+    "bin": ["bin/jts.php"],
+    "description": "A program to convert JSON file to source code.",
     "keywords": ["json", "php", "converter", "source", "code", "tool", "utility"],
     "license": "MIT",
     "name": "kshabazz/json-to-src",
