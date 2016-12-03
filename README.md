@@ -8,7 +8,7 @@ object. In addition, an array that contain objects will produce a class, but
 only one since all elements are assumed to be of the same type.
 
 ### Features
-* Parses JSON into an hash-array to be used in a template engine ([see schema](#array-schema)). 
+* Parses JSON into an hash-array to be used in a template engine ([see schema](#template-data-schema)). 
 * Outputs file(s) to a directory of your choice (assuming it is writable).
 * Can turn off/on generating unit tests.
 * Optional set a namespace.
@@ -69,4 +69,60 @@ null | null
 #### Shell or Command Line
 ```bash
 composer.phar require --dev kshabazz/json-to-src
+```
+
+### Template Data Schema
+This is the array that is passed to the tempalte engines render method:
+```php
+$renderData = [
+    "className" => Company
+    "classProperties" => [
+        [
+            "name" => company
+            "type" => string
+            "isCustomType" => 
+            "paramType" => string
+            "value" => Kohirens
+            "arrayType" => 
+        ],
+        [
+            "name" => employees
+            "type" => array
+            "isCustomType" => 
+            "paramType" => array
+            "value" => ""
+            "arrayType" => employees
+        ],
+        [
+            "name" => location
+            "type" => Location
+            "isCustomType" => 1
+            "paramType" => Location
+            "value" => stdClass Object
+                (
+                    "type" => Point
+                    "coordinates" => Array
+                        (
+                            [0" => -83.0466419
+                            [1" => 42.3323378
+                        )
+
+                    "city" => Detroit
+                    "state" => MI
+                    "zip_code" => 48226
+                )
+
+            "arrayType" => 
+        ],
+        [
+            "name" => categories
+            "type" => array
+            "isCustomType" => 
+            "paramType" => array
+            "value" => []
+            "arrayType" => categories
+        ]
+    ],
+    "classNamespace" => Tests
+];
 ```
