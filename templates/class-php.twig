@@ -12,7 +12,7 @@ class {{className}}
     /**
      * {{ getVarType(classProp, classNamespace) }}
      */
-    private ${{classProp.name}};
+    {{classProp.access}} ${{classProp.name}};
     {% endfor %}
 
     /**

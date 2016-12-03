@@ -14,6 +14,12 @@ class Converter
     /** @var string Regular expression use to verify a name-space.*/
     const REGEX_NS = '/^[a-zA-Z][a-zA-Z0-9\\\\]*[a-zA-Z]?$/';
 
+    /** @var string The default access level for generated class property. */
+    private $accessLevel;
+
+    /** @var array The allowed access levels for the source code. */
+    private $allowedAccessLevels;
+
     /** @var string */
     private $className;
 
@@ -122,9 +128,14 @@ class Converter
             'integer' => 'int',
             'NULL' => ''
         ];
-
         $this->genUnitTests = true;
         $this->unitTests = [];
+        $this->allowedAccessLevels = [
+            'private',
+            'protected',
+            'public'
+        ];
+        $this->accessLevel = $this->allowedAccessLevels[0];
     }
 
     /**
@@ -225,6 +236,40 @@ class Converter
     }
 
     /**
+     * Set the default access level for class properties.
+     *
+     * @param $level
+     * @return Converter
+     * @throws JtpException
+     */
+    public function withAccessLevel($level)
+    {
+        if (!in_array($level, $this->allowedAccessLevels)) {
+            throw new JtpException(
+                JtpException::BAD_ACCESS_LEVEL,
+                [$level, print_r($this->allowedAccessLevels, true)]
+            );
+        }
+
+        $this->accessLevel = $level;
+
+        return $this;
+    }
+
+    /**
+     * Set the access levels allowed for the generated source.
+     *
+     * @param array $allowedAccessLevels
+     * @return Converter
+     */
+    public function withAllowedAccessLevels(array $allowedAccessLevels)
+    {
+        $this->allowedAccessLevels = $allowedAccessLevels;
+
+        return $this;
+    }
+
+    /**
      * Get object from JSON string.
      *
      * Verify the JSON contains an object or an array where the first elements is
@@ -294,6 +339,7 @@ class Converter
         }
 
         return [
+            'access' => $this->accessLevel,
             'name' => str_replace(['$', '-'], '', $property),
             'type' => $type,
             'isCustomType' => $isCustomType,

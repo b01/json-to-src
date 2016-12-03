@@ -448,7 +448,6 @@ class ConverterTest extends \PHPUnit_Framework_TestCase
      * @uses \Jtp\Converter::getRootObject
      * @uses \Jtp\Converter::generateSource
      * @uses \Jtp\Converter::setClassTemplate
-     * @uses \Jtp\Converter::parseProperty
      * @uses \Jtp\Converter::parseClassData
      * @uses \Jtp\Converter::generateSource
      */
@@ -474,7 +473,90 @@ class ConverterTest extends \PHPUnit_Framework_TestCase
         $converter = new Converter($jsonFile, $className, $namespace);
         $converter->setClassTemplate($this->mockTwigTemplate);
         $converter->generateSource();
+    }
 
+    /**
+     * @covers ::withAccessLevel
+     * @uses \Jtp\Converter::__construct
+     * @uses \Jtp\Converter::getRootObject
+     * @uses \Jtp\Converter::generateSource
+     * @uses \Jtp\Converter::setClassTemplate
+     * @uses \Jtp\Converter::parseProperty
+     * @uses \Jtp\Converter::parseClassData
+     * @uses \Jtp\Converter::generateSource
+     */
+    public function testCanSetAccessLevelForGenProperties()
+    {
+        $jsonFile = '{"prop":"It\'s me"}';
+        $className = 'Test';
+        $namespace = 'T';
+
+        $this->mockTwigTemplate->expects($this->exactly(1))
+            ->method('render')
+            ->with($this->callback(function ($arg1) {
+                return $arg1['classProperties'][0]['access'] === 'protected';
+            }))
+            ->willReturn('test');
+
+        $converter = new Converter($jsonFile, $className, $namespace);
+        $converter->setClassTemplate($this->mockTwigTemplate)
+            ->withAccessLevel('protected');
+        $converter->generateSource();
+    }
+
+    /**
+     * @covers ::withAccessLevel
+     * @uses \Jtp\Converter::__construct
+     * @uses \Jtp\Converter::getRootObject
+     * @uses \Jtp\Converter::generateSource
+     * @uses \Jtp\Converter::setClassTemplate
+     * @uses \Jtp\Converter::parseProperty
+     * @uses \Jtp\Converter::parseClassData
+     * @uses \Jtp\Converter::generateSource
+     * @expectedException \Jtp\JtpException
+     *
+     */
+    public function testCannotSetAccessLevelWhenNotInAllowed()
+    {
+        $jsonFile = '{"prop":"It\'s me"}';
+        $className = 'Test';
+        $namespace = 'T';
+
+        $converter = new Converter($jsonFile, $className, $namespace);
+        $converter->setClassTemplate($this->mockTwigTemplate)
+            ->withAccessLevel('test');
+        $converter->generateSource();
+    }
+
+    /**
+     * @covers ::withAllowedAccessLevels
+     * @uses \Jtp\Converter::__construct
+     * @uses \Jtp\Converter::getRootObject
+     * @uses \Jtp\Converter::generateSource
+     * @uses \Jtp\Converter::setClassTemplate
+     * @uses \Jtp\Converter::parseProperty
+     * @uses \Jtp\Converter::parseClassData
+     * @uses \Jtp\Converter::generateSource
+     * @uses \Jtp\Converter::withAccessLevel
+     */
+    public function testCanSetWhatAccessLevelsAreAllowed()
+    {
+        $jsonFile = '{"prop":"It\'s me"}';
+        $className = 'Test';
+        $namespace = 'T';
+
+        $this->mockTwigTemplate->expects($this->exactly(1))
+            ->method('render')
+            ->with($this->callback(function ($arg1) {
+                return $arg1['classProperties'][0]['access'] === 'test';
+            }))
+            ->willReturn('test');
+
+        $converter = new Converter($jsonFile, $className, $namespace);
+        $converter->setClassTemplate($this->mockTwigTemplate)
+            ->withAllowedAccessLevels(['test'])
+            ->withAccessLevel('test');
+        $converter->generateSource();
     }
 }
 ?>

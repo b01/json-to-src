@@ -9,14 +9,16 @@ require_once __DIR__ . DIRECTORY_SEPARATOR . 'command-line-helpers.php';
 
 use Jtp\Converter;
 use Ulrichsg\Getopt\Getopt;
+
 echo PHP_EOL . 'FYI current working directory is: ' . getcwd() . PHP_EOL;
 
-// Command line opiton flags.
+// Command line option flags.
 $flags = ''
     . 'n::' // optional namespace.
-    . 'u::' // optional debug mode.
+    . 'u::' // optional separate unit test directory.
+    . 'a::' // optional default property access level.
     . 'd' // optional debug mode.
-    . 't' // optional debug mode.
+    . 't' // optional turn off/on type hints.
 ;
 
 // Allows us to c
@@ -58,6 +60,7 @@ $namespace = getArg(-1, $indexArgs, 'n', $options, '');
 $debug = (bool) getArg(-1, $indexArgs, 'd', $options, false);
 $typeHints = (bool) getArg(-1, $indexArgs, 't', $options, false);
 $unitTestDir = getArg(-1, $indexArgs, 'u', $options, null);
+$accessLvl = getArg(-1, $indexArgs, 'a', $options, 'private');
 
 try {
     $jsonString = file_get_contents($jsonFile);
@@ -77,8 +80,9 @@ try {
     // Load template for generating the class unit test source code.
     $unitTestTemplate = $twig->loadTemplate('class-unit-php.twig');
 
-    $converter->setClassTemplate($classTemplate);
-    $converter->setUnitTestTemplate($unitTestTemplate);
+    $converter->setClassTemplate($classTemplate)
+        ->setUnitTestTemplate($unitTestTemplate)
+        ->withAccessLevel($accessLvl);
     $converter->generateSource();
     $converter->save($outDir, $unitTestDir);
     echo 'Done' . PHP_EOL;

@@ -22,6 +22,9 @@ class JtpException extends Exception
     /** @var integer Indicates a directory was not found or writable. */
     const NOT_WRITEABLE = 5;
 
+    /** @var integer Indicates tried to set a bad default access level. */
+    const BAD_ACCESS_LEVEL = 6;
+
     /**
      * List of error codes and their corresponding messages.
      *
@@ -32,7 +35,8 @@ class JtpException extends Exception
         self::BAD_JSON_DECODE => 'The decoded JSON does not contain any fields that can be converted to PHP, with last JSON error: %s: JSON: "%s".',
         self::BAD_NAMESPACE => 'Invalid character(s) found when trying to use the namespace "%s".',
         self::BAD_CLASS_NAME => 'Invalid character(s) found when trying to use the class name "%s".',
-        self::NOT_WRITEABLE => 'Directory is not writable: "%s".'
+        self::NOT_WRITEABLE => 'Directory is not writable: "%s".',
+        self::BAD_ACCESS_LEVEL => 'Access level "%s" is not allowed. Only: %s'
     ];
 
     /**
