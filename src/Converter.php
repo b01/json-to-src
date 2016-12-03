@@ -90,7 +90,7 @@ class Converter
         $namespace = '',
         $rLimit = 3
     ) {
-        $this->json = json_decode($jsonString);
+        $this->json = $this->getRootObject($jsonString);
 
         if (!$this->json instanceof stdClass) {
             throw new JtpException(
@@ -176,9 +176,10 @@ class Converter
             file_put_contents($filename, $code);
         }
 
-        if (!is_dir($unitTestDir)) {
+        if (!is_dir($unitTestDir) || !is_writeable($directory)) {
             $unitTestDir = $directory;
         }
+
         foreach($this->sources['tests'] as $className => $code) {
             $filename = $unitTestDir . DIRECTORY_SEPARATOR . $className . '.php';
 
@@ -190,25 +191,64 @@ class Converter
      * Set template to generate class source.
      *
      * @param Twig_Template $template
+     * @return Converter
      */
     public function setClassTemplate(Twig_Template $template)
     {
         $this->classTemplate = $template;
+
+        return $this;
     }
 
     /**
      * Turn on/off generating unit test class.
      *
      * @param bool $bool
+     * @return Converter
      */
     public function setGenUnitTests($bool)
     {
         $this->genUnitTests = $bool;
+
+        return $this;
     }
 
+    /**
+     * Set the template to generate unit test.
+     *
+     * @param \Twig_Template $template
+     * @return Converter
+     */
     public function setUnitTestTemplate(Twig_Template $template)
     {
         $this->unitTestTemplate = $template;
+
+        return $this;
+    }
+
+    /**
+     * Get object from JSON string.
+     *
+     * Verify the JSON contains an object or an array where the first elements is
+     * an object.
+     *
+     * @param string $jsonString
+     * @return bool
+     */
+    private function getRootObject($jsonString)
+    {
+        $decoded = json_decode($jsonString);
+        $object = null;
+
+        if (is_object($decoded)) {
+            $object = $decoded;
+        } else if (is_array($decoded)
+            && count($decoded) > 0
+            && is_object($decoded[0])) {
+            $object = $decoded[0];
+        }
+
+        return $object;
     }
 
     /**
@@ -230,14 +270,14 @@ class Converter
         $isCustomType = $type === 'object';
 
         if ($isCustomType) {
-            $customType = ucfirst($property);
-            $type = $customType;
-            $paramType = $customType;
+            $type = ucfirst($property);
+            $paramType = $type;
         } else {
             $paramType = array_key_exists($type, $this->typeMap)
                 ? $this->typeMap[$type]
                 : $type;
         }
+
         $isAnArrayOfObjects = is_array($value)
             && count($value) > 0
             && is_object($value[0]);
@@ -245,7 +285,12 @@ class Converter
         if (is_array($value)) {
             $val = '[]';
         } else if (is_string($value)) {
-            $val = addslashes($value);
+            // Place a '\' before: \ '
+            $val = str_replace(
+                ['\\', '\''],
+                ['\\\\', '\\\''],
+                $value
+            );
         } else {
             $val = $value;
         }

@@ -21,6 +21,7 @@ class ConverterTest extends \PHPUnit_Framework_TestCase
 
     /**
      * @covers ::__construct
+     * @covers ::getRootObject
      */
     public function testCanInitialize()
     {
@@ -33,6 +34,20 @@ class ConverterTest extends \PHPUnit_Framework_TestCase
 
     /**
      * @covers ::__construct
+     * @covers ::getRootObject
+     */
+    public function testCanInitializeWithArrayOfObject()
+    {
+        $jsonFile = '[{"test":1234}]';
+        $className = 'T';
+        $converter = new Converter($jsonFile, $className);
+
+        $this->assertInstanceOf(Converter::class, $converter);
+    }
+
+    /**
+     * @covers ::__construct
+     * @covers ::getRootObject
      * @expectedException \Jtp\JtpException
      */
     public function testWillFailInitializeWithInvalidJson()
@@ -45,6 +60,7 @@ class ConverterTest extends \PHPUnit_Framework_TestCase
 
     /**
      * @covers ::__construct
+     * @covers ::getRootObject
      * @expectedException \Jtp\JtpException
      */
     public function testWillFailInitializeWithInvalidClassName()
@@ -58,6 +74,7 @@ class ConverterTest extends \PHPUnit_Framework_TestCase
 
     /**
      * @covers ::__construct
+     * @covers ::getRootObject
      * @expectedException \Jtp\JtpException
      */
     public function testWillFailInitializeWithInvalidNameSpace()
@@ -79,6 +96,7 @@ class ConverterTest extends \PHPUnit_Framework_TestCase
      * @covers ::parseProperty
      * @covers ::parseClassData
      * @uses \Jtp\Converter::__construct
+     * @uses \Jtp\Converter::getRootObject
      */
     public function testWillGenerateSource()
     {
@@ -110,6 +128,7 @@ class ConverterTest extends \PHPUnit_Framework_TestCase
      * @covers ::parseProperty
      * @covers ::parseClassData
      * @uses \Jtp\Converter::__construct
+     * @uses \Jtp\Converter::getRootObject
      */
     public function testWillGenerateSourceIncludingNestedClasses()
     {
@@ -144,6 +163,7 @@ class ConverterTest extends \PHPUnit_Framework_TestCase
     /**
      * @covers ::parseClassData
      * @uses \Jtp\Converter::__construct
+     * @uses \Jtp\Converter::getRootObject
      * @uses \Jtp\Converter::generateSource
      * @uses \Jtp\Converter::setClassTemplate
      * @uses \Jtp\Converter::parseProperty
@@ -176,6 +196,7 @@ class ConverterTest extends \PHPUnit_Framework_TestCase
      * @covers ::debugParseClasses
      * @covers ::parseClassData
      * @uses \Jtp\Converter::__construct
+     * @uses \Jtp\Converter::getRootObject
      * @uses \Jtp\Converter::generateSource
      * @uses \Jtp\Converter::setClassTemplate
      */
@@ -208,6 +229,7 @@ class ConverterTest extends \PHPUnit_Framework_TestCase
     /**
      * @covers ::save
      * @uses \Jtp\Converter::__construct
+     * @uses \Jtp\Converter::getRootObject
      * @uses \Jtp\Converter::generateSource
      * @uses \Jtp\Converter::setClassTemplate
      * @uses \Jtp\Converter::parseClassData
@@ -237,6 +259,7 @@ class ConverterTest extends \PHPUnit_Framework_TestCase
     /**
      * @covers ::save
      * @uses \Jtp\Converter::__construct
+     * @uses \Jtp\Converter::getRootObject
      * @expectedException \Jtp\JtpException
      */
     public function testCannotSaveToNonExistingDirectory()
@@ -250,10 +273,47 @@ class ConverterTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
+     * @covers ::save
+     * @uses \Jtp\Converter::__construct
+     * @uses \Jtp\Converter::getRootObject
+     * @uses \Jtp\Converter::generateSource
+     * @uses \Jtp\Converter::setClassTemplate
+     * @uses \Jtp\Converter::parseClassData
+     * @uses \Jtp\Converter::setUnitTestTemplate
+     */
+    public function testCanSaveUnitTestInSeparateDir()
+    {
+        $jsonFile = '{"prop":1234}';
+        $className = 'Test';
+        $namespace = 'T';
+        $expected = 'unit test';
+        $fixtureDir = TEST_TEMP_DIR . DIRECTORY_SEPARATOR  . 'tests';
+
+        $this->mockTwigTemplate->expects($this->exactly(2))
+            ->method('render')
+            ->with($this->callback(function ($arg1) {
+                return $arg1['className'] !== 'Test4';
+            }))
+            ->willReturn($expected);
+
+        $converter = new Converter($jsonFile, $className, $namespace);
+        $converter->setClassTemplate($this->mockTwigTemplate)
+            ->setUnitTestTemplate($this->mockTwigTemplate)
+            ->generateSource();
+        $converter->save(TEST_TEMP_DIR, $fixtureDir);
+        $actual = file_get_contents(
+            $fixtureDir . DIRECTORY_SEPARATOR . 'TestTest.php'
+        );
+
+        $this->assertEquals($expected, $actual);
+    }
+
+    /**
      * @covers ::generateSource
      * @covers ::setGenUnitTests
      * @covers ::setUnitTestTemplate
      * @uses \Jtp\Converter::__construct
+     * @uses \Jtp\Converter::getRootObject
      * @uses \Jtp\Converter::generateSource
      * @uses \Jtp\Converter::setClassTemplate
      * @uses \Jtp\Converter::parseProperty
@@ -288,12 +348,12 @@ class ConverterTest extends \PHPUnit_Framework_TestCase
     /**
      * @covers ::setGenUnitTests
      * @uses \Jtp\Converter::__construct
+     * @uses \Jtp\Converter::getRootObject
      * @uses \Jtp\Converter::generateSource
      * @uses \Jtp\Converter::setClassTemplate
      * @uses \Jtp\Converter::parseProperty
      * @uses \Jtp\Converter::parseClassData
      * @uses \Jtp\Converter::generateSource
-     * @uses \Jtp\Converter::setGenUnitTests
      * @uses \Jtp\Converter::setUnitTestTemplate
      */
     public function testCanTurnOffGenerateOfUnitTests()
@@ -324,11 +384,11 @@ class ConverterTest extends \PHPUnit_Framework_TestCase
 
     /**
      * @covers ::parseClassData
+     * @covers ::parseProperty
      * @uses \Jtp\Converter::__construct
+     * @uses \Jtp\Converter::getRootObject
      * @uses \Jtp\Converter::generateSource
      * @uses \Jtp\Converter::setClassTemplate
-     * @uses \Jtp\Converter::parseProperty
-     * @uses \Jtp\Converter::parseClassData
      * @uses \Jtp\Converter::generateSource
      */
     public function testCanGenSubObjects()
@@ -346,6 +406,75 @@ class ConverterTest extends \PHPUnit_Framework_TestCase
         $actual = $converter->generateSource();
 
         $this->assertArrayHasKey('Prop', $actual['classes']);
+    }
+
+    /**
+     * @covers ::parseProperty
+     * @uses \Jtp\Converter::__construct
+     * @uses \Jtp\Converter::getRootObject
+     * @uses \Jtp\Converter::generateSource
+     * @uses \Jtp\Converter::setClassTemplate
+     * @uses \Jtp\Converter::parseClassData
+     * @uses \Jtp\Converter::generateSource
+     */
+    public function testCanGenPropertiesWithArrayAsDefault()
+    {
+        $jsonFile = '{"prop":[]}';
+        $className = 'Test';
+        $namespace = 'T';
+
+        $this->mockTwigTemplate->expects($this->exactly(1))
+            ->method('render')
+            ->with($this->callback(function ($arg1) {
+                if ($arg1['className'] === 'Test') {
+                    return $arg1['classProperties'][0]['name'] === 'prop'
+                    && $arg1['classProperties'][0]['type'] === 'array'
+                    && $arg1['classProperties'][0]['paramType'] === 'array'
+                    && $arg1['classProperties'][0]['value'] === '[]'
+                    && $arg1['classNamespace'] === 'T';
+                }
+            }))
+            ->willReturn('test');
+
+        $converter = new Converter($jsonFile, $className, $namespace);
+        $converter->setClassTemplate($this->mockTwigTemplate);
+        $converter->generateSource();
+
+    }
+
+    /**
+     * @covers ::parseProperty
+     * @uses \Jtp\Converter::__construct
+     * @uses \Jtp\Converter::getRootObject
+     * @uses \Jtp\Converter::generateSource
+     * @uses \Jtp\Converter::setClassTemplate
+     * @uses \Jtp\Converter::parseProperty
+     * @uses \Jtp\Converter::parseClassData
+     * @uses \Jtp\Converter::generateSource
+     */
+    public function testCanGenPropertiesWithEmptyStringAsDefault()
+    {
+        $jsonFile = '{"prop":"It\'s me"}';
+        $className = 'Test';
+        $namespace = 'T';
+
+        $this->mockTwigTemplate->expects($this->exactly(1))
+            ->method('render')
+            ->with($this->callback(function ($arg1) {
+                if ($arg1['className'] === 'Test') {
+                    return $arg1['classProperties'][0]['name'] === 'prop'
+                    && $arg1['classProperties'][0]['type'] === 'string'
+                    && $arg1['classProperties'][0]['paramType'] === 'string'
+                    && $arg1['classProperties'][0]['value'] === 'It\\\'s me'
+                    && $arg1['classNamespace'] === 'T';
+                }
+            }))
+            ->willReturn('test');
+
+        $converter = new Converter($jsonFile, $className, $namespace);
+        $converter->setClassTemplate($this->mockTwigTemplate);
+        $converter->generateSource();
+
     }
 }
 ?>
