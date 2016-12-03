@@ -138,18 +138,16 @@ class Converter
         $this->classes = $this->parseClassData($objectVars, $this->className);
 
         foreach ($this->classes as $className => $properties) {
-            $this->sources['classes'][$className] = $this->classTemplate->render([
+            $renderData = [
                 'className' => $className,
                 'classProperties' => $properties,
                 'classNamespace' => $this->namespace
-            ]);
+            ];
+            $this->sources['classes'][$className] = $this->classTemplate->render($renderData);
 
             if ($this->genUnitTests && $this->unitTestTemplate instanceof Twig_Template) {
-                $this->sources['tests'][$className . 'Test'] = $this->unitTestTemplate->render([
-                    'className' => $className,
-                    'classProperties' => $properties,
-                    'classNamespace' => $this->namespace
-                ]);
+                $this->sources['tests'][$className . 'Test']
+                    = $this->unitTestTemplate->render($renderData);
             }
         }
 
