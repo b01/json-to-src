@@ -17,8 +17,9 @@ $flags = ''
     . 'n::' // optional namespace.
     . 'u::' // optional separate unit test directory.
     . 'a::' // optional default property access level.
+    . 'c::' // optional callback function before template render.
     . 'd' // optional debug mode.
-    . 't' // optional turn off/on type hints.
+    . 't' // optional turn off type hints.
 ;
 
 // Allows us to c
@@ -61,6 +62,7 @@ $debug = (bool) getArg(-1, $indexArgs, 'd', $options, false);
 $typeHints = (bool) getArg(-1, $indexArgs, 't', $options, false);
 $unitTestDir = getArg(-1, $indexArgs, 'u', $options, null);
 $accessLvl = getArg(-1, $indexArgs, 'a', $options, 'private');
+$callbackScript = getArg(-1, $indexArgs, 'c', $options, null);
 
 try {
     $jsonString = file_get_contents($jsonFile);
@@ -83,6 +85,13 @@ try {
     $converter->setClassTemplate($classTemplate)
         ->setUnitTestTemplate($unitTestTemplate)
         ->withAccessLevel($accessLvl);
+
+    // Pre-template callback function
+    if (file_exists($callbackScript)) {
+        $preRenderCallback = require_once $callbackScript;
+        $converter->withPreRenderCallback($preRenderCallback);
+    }
+
     $converter->generateSource();
     $converter->save($outDir, $unitTestDir);
     echo 'Done' . PHP_EOL;

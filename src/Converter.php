@@ -42,6 +42,13 @@ class Converter
     /** @var string */
     private $namespace;
 
+    /**
+     * Function to receive render data before render for alteration.
+     *
+     * @var callable
+     */
+    private $preRenderCallback;
+
     /** @var integer Limit the amount of recursion for nested objects. */
     private $recursionLimit;
 
@@ -147,18 +154,28 @@ class Converter
     {
         $objectVars = get_object_vars($this->json);
         $this->classes = $this->parseClassData($objectVars, $this->className);
+        $doCallback = is_callable($this->preRenderCallback);
 
         foreach ($this->classes as $className => $properties) {
-            $renderData = [
+            $testData = $renderData = $data = [
                 'className' => $className,
                 'classProperties' => $properties,
                 'classNamespace' => $this->namespace
             ];
+
+            if ($doCallback) {
+                $renderData = ($this->preRenderCallback)($renderData, false);
+            }
+
             $this->sources['classes'][$className] = $this->classTemplate->render($renderData);
 
             if ($this->genUnitTests && $this->unitTestTemplate instanceof Twig_Template) {
+                if ($doCallback) {
+                    $testData = ($this->preRenderCallback)($testData, true);
+                }
+
                 $this->sources['tests'][$className . 'Test']
-                    = $this->unitTestTemplate->render($renderData);
+                    = $this->unitTestTemplate->render($testData);
             }
         }
 
@@ -260,11 +277,29 @@ class Converter
      * Set the access levels allowed for the generated source.
      *
      * @param array $allowedAccessLevels
-     * @return Converter
+     * @return \Jtp\Converter
      */
     public function withAllowedAccessLevels(array $allowedAccessLevels)
     {
         $this->allowedAccessLevels = $allowedAccessLevels;
+
+        return $this;
+    }
+
+    /**
+     * Set a function to call before rendering the source code.
+     *
+     * The callable will be passed the render data, and a boolean value to
+     * indicate "TRUE" when generating code for a unit test and "FALSE" for a
+     * actual class.
+     *
+     * @return Converter
+     * @param callable $callable
+     * @return \Jtp\Converter
+     */
+    public function withPreRenderCallback(callable $callable)
+    {
+        $this->preRenderCallback = $callable;
 
         return $this;
     }

@@ -12,6 +12,7 @@ only one since all elements are assumed to be of the same type.
 * Outputs file(s) to a directory of your choice (assuming it is writable).
 * Can turn off/on generating unit tests.
 * Optional set a namespace.
+* set a callaback to manipulate the output of the source code generated.
 
 #### Using the Default PHP template
 * Will convert to PHP, turning fields into
@@ -61,8 +62,10 @@ null | null
 
 #### Composer.json
 ```json
-"require": {
-    "kshabazz/json-to-src": "dev-master"
+{
+  "require": {
+    "kshabazz/json-to-src": "^1.0"
+  }
 }
 ```
 
@@ -126,3 +129,37 @@ $renderData = [
     "classNamespace" => Tests
 ];
 ```
+
+### Set A Callback
+
+You can also set a callback that will recieve the render data, to control thins
+such as the class name, namespace, and etc. Take the following example.
+
+**Callback script: preRenderCallback.php**
+```php
+
+return function (array $renderData, $isUnitTest) {
+    if (!$isUnitTest) {
+        $renderData['classNamespace'] .= '\\Bar';
+    }
+    
+    return $renderData;
+};
+```
+
+**Pass preRenderCallback.php to the command line script:**
+```bash
+jsontosrc -n Tests -c preRenderCallback.php company.json Company tmp
+```
+
+
+### Command Line
+
+The "jsontosrc" command line script take several arguments and options.
+
+-n Takes a string to use as a namespace.
+-u A directory to output unit test.
+-a Set the property access, the default is "private."
+-c callback function before template render.
+-d Add debug messages to the output.
+-t Turn off/on PHP 7 type hints.

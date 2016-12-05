@@ -314,7 +314,6 @@ class ConverterTest extends \PHPUnit_Framework_TestCase
      * @covers ::setUnitTestTemplate
      * @uses \Jtp\Converter::__construct
      * @uses \Jtp\Converter::getRootObject
-     * @uses \Jtp\Converter::generateSource
      * @uses \Jtp\Converter::setClassTemplate
      * @uses \Jtp\Converter::parseProperty
      * @uses \Jtp\Converter::parseClassData
@@ -353,7 +352,6 @@ class ConverterTest extends \PHPUnit_Framework_TestCase
      * @uses \Jtp\Converter::setClassTemplate
      * @uses \Jtp\Converter::parseProperty
      * @uses \Jtp\Converter::parseClassData
-     * @uses \Jtp\Converter::generateSource
      * @uses \Jtp\Converter::setUnitTestTemplate
      */
     public function testCanTurnOffGenerateOfUnitTests()
@@ -389,7 +387,6 @@ class ConverterTest extends \PHPUnit_Framework_TestCase
      * @uses \Jtp\Converter::getRootObject
      * @uses \Jtp\Converter::generateSource
      * @uses \Jtp\Converter::setClassTemplate
-     * @uses \Jtp\Converter::generateSource
      */
     public function testCanGenSubObjects()
     {
@@ -415,7 +412,6 @@ class ConverterTest extends \PHPUnit_Framework_TestCase
      * @uses \Jtp\Converter::generateSource
      * @uses \Jtp\Converter::setClassTemplate
      * @uses \Jtp\Converter::parseClassData
-     * @uses \Jtp\Converter::generateSource
      */
     public function testCanGenPropertiesWithArrayAsDefault()
     {
@@ -449,7 +445,6 @@ class ConverterTest extends \PHPUnit_Framework_TestCase
      * @uses \Jtp\Converter::generateSource
      * @uses \Jtp\Converter::setClassTemplate
      * @uses \Jtp\Converter::parseClassData
-     * @uses \Jtp\Converter::generateSource
      */
     public function testCanGenPropertiesWithEmptyStringAsDefault()
     {
@@ -483,7 +478,6 @@ class ConverterTest extends \PHPUnit_Framework_TestCase
      * @uses \Jtp\Converter::setClassTemplate
      * @uses \Jtp\Converter::parseProperty
      * @uses \Jtp\Converter::parseClassData
-     * @uses \Jtp\Converter::generateSource
      */
     public function testCanSetAccessLevelForGenProperties()
     {
@@ -512,7 +506,6 @@ class ConverterTest extends \PHPUnit_Framework_TestCase
      * @uses \Jtp\Converter::setClassTemplate
      * @uses \Jtp\Converter::parseProperty
      * @uses \Jtp\Converter::parseClassData
-     * @uses \Jtp\Converter::generateSource
      * @expectedException \Jtp\JtpException
      *
      */
@@ -536,7 +529,6 @@ class ConverterTest extends \PHPUnit_Framework_TestCase
      * @uses \Jtp\Converter::setClassTemplate
      * @uses \Jtp\Converter::parseProperty
      * @uses \Jtp\Converter::parseClassData
-     * @uses \Jtp\Converter::generateSource
      * @uses \Jtp\Converter::withAccessLevel
      */
     public function testCanSetWhatAccessLevelsAreAllowed()
@@ -556,6 +548,72 @@ class ConverterTest extends \PHPUnit_Framework_TestCase
         $converter->setClassTemplate($this->mockTwigTemplate)
             ->withAllowedAccessLevels(['test'])
             ->withAccessLevel('test');
+        $converter->generateSource();
+    }
+
+    /**
+     * @covers ::generateSource
+     * @covers ::withPreRenderCallback
+     * @uses \Jtp\Converter::__construct
+     * @uses \Jtp\Converter::getRootObject
+     * @uses \Jtp\Converter::setClassTemplate
+     * @uses \Jtp\Converter::parseProperty
+     * @uses \Jtp\Converter::parseClassData
+     * @uses \Jtp\Converter::withAccessLevel
+     */
+    public function testCanSetACallbackForPreRenderModifications()
+    {
+        $jsonFile = '{"prop":"It\'s me"}';
+        $className = 'Test';
+        $namespace = 'T';
+
+        $converter = new Converter($jsonFile, $className, $namespace);
+
+        $unitTest = $this;
+        $converter->setClassTemplate($this->mockTwigTemplate)
+            ->withPreRenderCallback(function ($arg1, $arg2) use ($unitTest) {
+                $unitTest->assertEquals('prop', $arg1['classProperties'][0]['name']);
+                $unitTest->assertFalse($arg2);
+                return $arg1;
+            });
+
+        $converter->generateSource();
+    }
+
+    /**
+     * @covers ::generateSource
+     * @covers ::withPreRenderCallback
+     * @uses \Jtp\Converter::__construct
+     * @uses \Jtp\Converter::getRootObject
+     * @uses \Jtp\Converter::setClassTemplate
+     * @uses \Jtp\Converter::parseProperty
+     * @uses \Jtp\Converter::parseClassData
+     * @uses \Jtp\Converter::withAccessLevel
+     */
+    public function testCanSetACallbackForPreRenderModificationsOfUnitTestSeparately()
+    {
+        $jsonFile = '{"prop":"It\'s me"}';
+        $className = 'Test';
+        $namespace = 'T';
+        $unitTest = $this;
+        $counter = 0;
+
+        $converter = new Converter($jsonFile, $className, $namespace);
+
+        $converter->setClassTemplate($this->mockTwigTemplate)
+            ->setUnitTestTemplate($this->mockTwigTemplate)
+            ->withPreRenderCallback(function ($arg1, $arg2) use ($unitTest, & $counter) {
+                $unitTest->assertEquals('prop', $arg1['classProperties'][0]['name']);
+                if ($counter === 0) {
+                    $unitTest->assertFalse($arg2);
+                } else {
+                    $unitTest->assertTrue($arg2);
+                }
+                $counter = $counter + 1;
+
+                return $arg1;
+            });
+
         $converter->generateSource();
     }
 }

@@ -1,12 +1,15 @@
 <?php {%- if classNamespace is not empty %} namespace {{classNamespace}};{% endif %}
 {% autoescape false %}
 {% set fullClassName = getFullNameSpace(classNamespace, className) %}
+{{ useStmts }}
 
 /**
  * Class {{className}}
  */
-class {{className}}
+class {{className}}{{ classAttrs }}
 {
+    {{- traitStmts -}}
+
     {%- for classProp in classProperties %}
 
     /**

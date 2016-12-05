@@ -3,7 +3,7 @@
 {% autoescape false %}
 {% set fullClassName = getFullNameSpace(classNamespace, className) %}
 
-use {{fullClassName}};
+use {{fullClassName}};{{ useStmts }}
 
 /**
  * Class {{className}}Test
