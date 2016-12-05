@@ -1,9 +1,4 @@
 <?php
-/**
- * @copyright ©2016 Quicken Loans Inc. All rights reserved. Trade
- * Secret, Confidential and Proprietary. Any dissemination outside
- * of Quicken Loans is strictly prohibited.
- */
 
 namespace Jtp;
 
@@ -172,16 +167,25 @@ class TwigTools extends Twig_Extension
      * Produce a string of $this->{property} = {value};
      *
      * @param array $prop
+     * @param string $namespace
      * @return string
      */
-    public function getVarType(array $prop, $namespace)
+    public function getVarType(array $prop, $namespace = '')
     {
         $output = '';
 
         if (!empty($prop['arrayType'])) {
-            $output = '@var '. $prop['paramType'] . ' of \\' . $namespace . '\\' . $prop['arrayType'];
-        } else if (!empty($prop['isCustomType'])) {
-            $output = '@var \\' . $namespace . '\\' . $prop['paramType'];
+            $output = '@var '. $prop['paramType'];// . ' of \\' . $namespace . '\\' . $prop['arrayType'];
+            if (!empty($namespace)) {
+                $output .= ' of \\' .$namespace;
+            }
+            $output .= '\\' . $prop['arrayType'];
+        } else if ($prop['isCustomType'] === true) {
+            $output = '@var ';
+            if (!empty($namespace)) {
+                $output .= '\\' . $namespace;
+            }
+            $output .= '\\' . $prop['paramType'];
         } else if (!empty($prop['paramType'])) {
             $output = '@var ' . $prop['paramType'];
         }
