@@ -645,5 +645,77 @@ class ConverterTest extends \PHPUnit_Framework_TestCase
 
         $converter->generateSource();
     }
+
+    /**
+     * @covers ::parseClassData
+     * @covers ::parseProperty
+     * @uses \Jtp\Converter::__construct
+     * @uses \Jtp\Converter::getRootObject
+     * @uses \Jtp\Converter::setClassTemplate
+     * @uses \Jtp\Converter::withAccessLevel
+     * @uses \Jtp\Converter::generateSource
+     * @uses \Jtp\Converter::getIncrementalClassName
+     */
+    public function testCanExtractAClassFromAnArrayOfObjects()
+    {
+        $jsonFile = '[{"foo":1234}]';
+        $className = 'Test';
+        $namespace = 'T';
+
+        $converter = new Converter($jsonFile, $className, $namespace);
+
+        $this->mockTwigTemplate->expects($this->once())
+            ->method('render')
+            ->will($this->returnCallback(function ($arg1) {
+                $this->assertEquals('Test', $arg1['className']);
+                $this->assertEquals('foo', $arg1['classProperties'][0]['name']);
+            }));
+
+        $converter->setClassTemplate($this->mockTwigTemplate);
+
+        $converter->generateSource();
+    }
+
+    /**
+     * @covers ::parseClassData
+     * @covers ::parseProperty
+     * @uses \Jtp\Converter::__construct
+     * @uses \Jtp\Converter::getRootObject
+     * @uses \Jtp\Converter::setClassTemplate
+     * @uses \Jtp\Converter::withAccessLevel
+     * @uses \Jtp\Converter::generateSource
+     * @uses \Jtp\Converter::getIncrementalClassName
+     */
+    public function testCanExtractAClassFromAnArrayOfObjectWithinANestedObject()
+    {
+        $jsonFile = '{"foo":{"bar":{"foo":[{"baz":1234}]}}}';
+        $className = 'Test';
+        $namespace = 'T';
+        $unitTest = $this;
+        $counter = 0;
+
+        $converter = new Converter($jsonFile, $className, $namespace, 4);
+
+        $this->mockTwigTemplate->expects($this->exactly(4))
+            ->method('render')
+            ->will($this->returnCallback(function ($arg1) use ($unitTest, & $counter) {
+                if ($counter === 0) {
+                    $this->assertEquals('Foo', $arg1['className']);
+                } else if ($counter === 1) {
+                    $this->assertEquals('Bar', $arg1['className']);
+                } else if ($counter === 2) {
+                    $this->assertEquals('Foo_1', $arg1['className']);
+                } else if ($counter === 3) {
+                    $this->assertEquals('Test', $arg1['className']);
+                }
+
+                $counter++;
+                return 'test';
+            }));
+
+        $converter->setClassTemplate($this->mockTwigTemplate);
+
+        $converter->generateSource();
+    }
 }
 ?>
