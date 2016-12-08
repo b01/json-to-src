@@ -162,4 +162,5 @@ The "jsontosrc" command line script take several arguments and options.
 -a Set the property access, the default is "private."
 -c callback function before template render.
 -d Add debug messages to the output.
--t Turn off/on PHP 7 type hints.
+-t Turn on PHP 7 type hints.
+-r Change the recursion limit, default is 20.

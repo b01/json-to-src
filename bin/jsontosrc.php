@@ -18,8 +18,9 @@ $flags = ''
     . 'u::' // optional separate unit test directory.
     . 'a::' // optional default property access level.
     . 'c::' // optional callback function before template render.
+    . 'r::' // optional recursion limit.
     . 'd' // optional debug mode.
-    . 't' // optional turn off type hints.
+    . 't' // optional turn on type hints.
 ;
 
 // Allows us to c
@@ -63,11 +64,12 @@ $typeHints = (bool) getArg(-1, $indexArgs, 't', $options, false);
 $unitTestDir = getArg(-1, $indexArgs, 'u', $options, null);
 $accessLvl = getArg(-1, $indexArgs, 'a', $options, 'private');
 $callbackScript = getArg(-1, $indexArgs, 'c', $options, null);
+$recursionLimit = getArg(-1, $indexArgs, 'r', $options, 20);
 
 try {
     $jsonString = file_get_contents($jsonFile);
     Converter::setDebugMode($debug);
-    $converter = new Converter($jsonString, $className, $namespace);
+    $converter = new Converter($jsonString, $className, $namespace, $recursionLimit);
 
     // Use a template engine to generate source code string.
     $twigLoader = new Twig_Loader_Filesystem(__DIR__
