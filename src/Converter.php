@@ -305,6 +305,24 @@ class Converter
     }
 
     /**
+     * @param string $name
+     * @param array $classes
+     * @return string
+     */
+    private function getIncrementalClassName($name, array & $classes)
+    {
+        $nextName = $name;
+        $i = 0;
+
+        while (array_key_exists($nextName, $classes)) {
+            $i++;
+            $nextName = "{$name}_{$i}";
+        }
+
+        return $nextName;
+    }
+
+    /**
      * Get object from JSON string.
      *
      * Verify the JSON contains an object or an array where the first elements is
@@ -443,6 +461,8 @@ class Converter
         }
 
         if (count($properties) > 0) {
+            // Patch to prevent classes from being overwritten.
+            $className = $this->getIncrementalClassName($className, $classes);
             $classes[$className] = $properties;
         }
 

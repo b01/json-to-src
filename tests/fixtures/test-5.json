@@ -11,7 +11,8 @@
         {
             "id": 2,
             "first_name": "John",
-            "last_name": "Doe"
+            "last_name": "Doe",
+            "location": {"department": 1, "name": "finance"}
         }
     ],
     "location": {

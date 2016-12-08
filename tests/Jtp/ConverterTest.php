@@ -616,5 +616,34 @@ class ConverterTest extends \PHPUnit_Framework_TestCase
 
         $converter->generateSource();
     }
+
+    /**
+     * @covers ::getIncrementalClassName
+     * @uses \Jtp\Converter::__construct
+     * @uses \Jtp\Converter::getRootObject
+     * @uses \Jtp\Converter::setClassTemplate
+     * @uses \Jtp\Converter::parseProperty
+     * @uses \Jtp\Converter::parseClassData
+     * @uses \Jtp\Converter::withAccessLevel
+     * @uses \Jtp\Converter::generateSource
+     */
+    public function testCanAppendNumberToClassNameToPreventCollision()
+    {
+        $jsonFile = '{"location":{"foo":1234, "location":{"bar":1234}}}';
+        $className = 'Test';
+        $namespace = 'T';
+
+        $converter = new Converter($jsonFile, $className, $namespace);
+
+        $this->mockTwigTemplate->expects($this->exactly(3))
+            ->method('render')
+            ->will($this->returnCallback(function ($arg1) {
+                $this->assertRegExp('/(Test|Location|Location_1)/', $arg1['className']);
+            }));
+
+        $converter->setClassTemplate($this->mockTwigTemplate);
+
+        $converter->generateSource();
+    }
 }
 ?>
