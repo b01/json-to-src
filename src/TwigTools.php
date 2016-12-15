@@ -160,7 +160,7 @@ class TwigTools extends Twig_Extension
             $return = '[]';
         }
 
-        return PHP_EOL . '        $this->' .  $name . ' = ' . $return . ';';
+        return "\n" . '        $this->' .  $name . ' = ' . $return . ';';
     }
 
     /**

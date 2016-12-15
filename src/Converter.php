@@ -16,14 +16,8 @@ class Converter
     /** @var string Regular expression use to verify a name-space.*/
     const REGEX_NS = '/^[a-zA-Z][a-zA-Z0-9\\\\]*[a-zA-Z]?$/';
 
-    /** @var string The default access level for generated class property. */
-    private $accessLevel;
-
-    /** @var array The allowed access levels for the source code. */
-    private $allowedAccessLevels;
-
-    /** @var string */
-    private $className;
+    /** @var \Jtp\ClassParser */
+    private $classParser;
 
     /**
      * ex: [ "className" => ["name" => "property1", "type" => "integer"], ... ]
@@ -35,24 +29,12 @@ class Converter
     /** @var Twig_Template */
     private $classTemplate;
 
-    /** @var boolean */
-    private $genUnitTests;
-
-    /** @var \stdClass */
-    private $json;
-
-    /** @var string */
-    private $namespace;
-
     /**
      * Function to receive render data before render for alteration.
      *
      * @var callable
      */
     private $preRenderCallback;
-
-    /** @var integer Limit the amount of recursion for nested objects. */
-    private $recursionLimit;
 
     /**
      * List of strings that represent the PHP source generated from the JSON.
@@ -71,26 +53,28 @@ class Converter
      * Constructor
      *
      * @param string $jsonString
-     * @param string $className
-     * @param string $namespace
-     * @param int $rLimit
-     * @throws JtpException
+     * @param \Jtp\ClassParser $classParser
+     * @throws \Jtp\JtpException
      */
     public function __construct(
-        $jsonString,
-        $className,
-        $namespace = '',
-        $rLimit = 3
+        ClassParser $classParser
     ) {
-        $this->json = $this->getRootObject($jsonString);
+        $this->classParser = $classParser;
+        $this->classes = [];
+        $this->sources = [
+            'classes' => [],
+            'tests' => []
+        ];
+        $this->unitTests = [];
+    }
 
-        if (!$this->json instanceof stdClass) {
-            throw new JtpException(
-                JtpException::BAD_JSON_DECODE,
-                [json_last_error_msg(), $jsonString]
-            );
-        }
-
+    /**
+     * Build source from JSON.
+     *
+     * @return array Each element is the PHP source.
+     */
+    public function generateSource($jsonString, $className, $namespace = '')
+    {
         if (preg_match(self::REGEX_CLASS, $className) !== 1) {
             throw new JtpException(JtpException::BAD_CLASS_NAME, [$className]);
         }
@@ -100,46 +84,15 @@ class Converter
             throw new JtpException(JtpException::BAD_NAMESPACE, [$namespace]);
         }
 
-        $this->className = $className;
-        $this->namespace = $namespace;
-        $this->recursionLimit = $rLimit;
-        $this->classes = [];
-        $this->sources = [
-            'classes' => [],
-            'tests' => []
-        ];
-        $this->typeMap = [
-            'boolean' => 'bool',
-            'array' => 'array',
-            'integer' => 'int',
-            'NULL' => ''
-        ];
-        $this->genUnitTests = true;
-        $this->unitTests = [];
-        $this->allowedAccessLevels = [
-            'private',
-            'protected',
-            'public'
-        ];
-        $this->accessLevel = $this->allowedAccessLevels[0];
-    }
-
-    /**
-     * Generate PHP source from JSON.
-     *
-     * @return array Each element is the PHP source.
-     */
-    public function generateSource()
-    {
-        $objectVars = get_object_vars($this->json);
-        $this->classes = $this->parseClassData($objectVars, $this->className);
+        $stdObject = $this->getRootObject($jsonString);
+        $this->classes = ($this->classParser)($stdObject, $className, $namespace);
         $doCallback = is_callable($this->preRenderCallback);
 
         foreach ($this->classes as $className => $properties) {
             $testData = $renderData = $data = [
                 'className' => $className,
                 'classProperties' => $properties,
-                'classNamespace' => $this->namespace
+                'classNamespace' => $namespace
             ];
 
             if ($doCallback) {
@@ -148,7 +101,7 @@ class Converter
 
             $this->sources['classes'][$className] = $this->classTemplate->render($renderData);
 
-            if ($this->genUnitTests && $this->unitTestTemplate instanceof Twig_Template) {
+            if ($this->unitTestTemplate instanceof Twig_Template) {
                 if ($doCallback) {
                     $testData = ($this->preRenderCallback)($testData, true);
                 }
@@ -162,12 +115,12 @@ class Converter
     }
 
     /**
-     * Save PHP source files to disk.
+     * Save source files to disk.
      *
      * @param string $directory Directory to save the files.
      * @param string $unitTestDir Specify a separate directory for unit tests.
      * @return void
-     * @throws \Jtp\JtpException
+     * @throws JtpException
      */
     public function save($directory, $unitTestDir = null)
     {
@@ -206,19 +159,6 @@ class Converter
     }
 
     /**
-     * Turn on/off generating unit test class.
-     *
-     * @param bool $bool
-     * @return Converter
-     */
-    public function setGenUnitTests($bool)
-    {
-        $this->genUnitTests = $bool;
-
-        return $this;
-    }
-
-    /**
      * Set the template to generate unit test.
      *
      * @param \Twig_Template $template
@@ -232,40 +172,6 @@ class Converter
     }
 
     /**
-     * Set the default access level for class properties.
-     *
-     * @param $level
-     * @return Converter
-     * @throws JtpException
-     */
-    public function withAccessLevel($level)
-    {
-        if (!in_array($level, $this->allowedAccessLevels)) {
-            throw new JtpException(
-                JtpException::BAD_ACCESS_LEVEL,
-                [$level, print_r($this->allowedAccessLevels, true)]
-            );
-        }
-
-        $this->accessLevel = $level;
-
-        return $this;
-    }
-
-    /**
-     * Set the access levels allowed for the generated source.
-     *
-     * @param array $allowedAccessLevels
-     * @return \Jtp\Converter
-     */
-    public function withAllowedAccessLevels(array $allowedAccessLevels)
-    {
-        $this->allowedAccessLevels = $allowedAccessLevels;
-
-        return $this;
-    }
-
-    /**
      * Set a function to call before rendering the source code.
      *
      * The callable will be passed the render data, and a boolean value to
@@ -274,31 +180,13 @@ class Converter
      *
      * @return Converter
      * @param callable $callable
-     * @return \Jtp\Converter
+     * @return Converter
      */
     public function withPreRenderCallback(callable $callable)
     {
         $this->preRenderCallback = $callable;
 
         return $this;
-    }
-
-    /**
-     * @param string $name
-     * @param array $classes
-     * @return string
-     */
-    private function getIncrementalClassName($name, array & $classes)
-    {
-        $nextName = $name;
-        $i = 0;
-
-        while (array_key_exists($nextName, $classes)) {
-            $i++;
-            $nextName = "{$name}_{$i}";
-        }
-
-        return $nextName;
     }
 
     /**
@@ -309,6 +197,7 @@ class Converter
      *
      * @param string $jsonString
      * @return bool
+     * @throws \Jtp\JtpException
      */
     private function getRootObject($jsonString)
     {
@@ -323,156 +212,14 @@ class Converter
             $object = $decoded[0];
         }
 
-        return $object;
-    }
-
-    /**
-     * Parse a JSON field and returns the following as array:
-     * * name - the name this values is assigned.
-     * * type - scalar, array, or custom class name
-     * * isCustomType - Indicate that the type is a user defined  class.
-     * * paramType - The string to use in a function signature or doc-block.
-     * * value - is_array($value) ? '[]' : $value
-     * * arrayType - When the value is an array of objects, this will contain the type.
-     *
-     * @param array $property
-     * @param mixed $value
-     * @return array
-     */
-    private function parseProperty($property, $value)
-    {
-        $type = gettype($value);
-        $isCustomType = $type === 'object';
-
-        if ($isCustomType) {
-            $type = ucfirst($property);
-            $paramType = $type;
-        } else {
-            $paramType = array_key_exists($type, $this->typeMap)
-                ? $this->typeMap[$type]
-                : $type;
-        }
-
-        $isAnArrayOfObjects = is_array($value)
-            && count($value) > 0
-            && is_object($value[0]);
-
-        if (is_array($value)) {
-            $val = '[]';
-        } else if (is_string($value)) {
-            // Place a '\' before: \ '
-            $val = str_replace(
-                ['\\', '\''],
-                ['\\\\', '\\\''],
-                $value
+        if (!$object instanceof stdClass) {
+            throw new JtpException(
+                JtpException::BAD_JSON_DECODE,
+                [json_last_error_msg(), $jsonString]
             );
-        } else {
-            $val = $value;
         }
 
-        return [
-            'access' => $this->accessLevel,
-            'name' => str_replace(['$', '-'], '', $property),
-            'type' => $type,
-            'isCustomType' => $isCustomType,
-            'paramType' => $paramType,
-            'value' => $val,
-            'arrayType' => $isAnArrayOfObjects ? $property : ''
-        ];
-    }
-
-    /**
-     * Transforms an array representation of a stdClsss into a structured array
-     * where each element represents a class and their values represent that
-     * classes properties.
-     *
-     * ex: [ "className" => ["name" => "property1", "type" => "integer"], ... ]
-     *
-     * A practical example would be an array returned from get_object_vars on
-     * stdClass object.
-     *
-     * * Convert JSON keys that have scalar values into properties. '$' will be removed.
-     * * Convert hash arrays into classes.
-     * * Convert stdClass objects into classes.
-     *
-     * @staticvar int $rCount
-     * @param array $objectVars
-     * @param string $className
-     * @param array $classes
-     * @return array
-     */
-    private function parseClassData(
-        array $objectVars,
-        $className,
-        array & $classes = []
-    ) {
-        static $rCount = 0;
-        // Limit the amount of recursion that can be performed.
-        if ($rCount >= $this->recursionLimit) {
-            return [];
-        }
-
-        // Loop through keys.
-        foreach ($objectVars as $key => $value) {
-            $keyProps = $this->parseProperty($key, $value);
-            $properties[] = $keyProps;
-
-            // Build class from object in an array.
-            if (!empty($keyProps['arrayType'])) {
-                $value = array_pop($value);
-                $key = $keyProps['arrayType'];
-            }
-
-            // Build class from a nested object.
-            if (is_object($value)) {
-                $newClassName = ucfirst($key);
-                $newObjectVars = get_object_vars($value);
-                if (count($newObjectVars) > 0) {
-                    $rCount++;
-                    $this->parseClassData(
-                        $newObjectVars,
-                        $newClassName,
-                        $classes
-                    );
-                    $rCount--;
-                }
-            }
-        }
-
-        if (count($properties) > 0) {
-            // Patch to prevent classes from being overwritten.
-            $className = $this->getIncrementalClassName($className, $classes);
-            $classes[$className] = $properties;
-        }
-
-        if (self::isDebugOn()) {
-            $this->debugParseClasses($rCount, $className, $properties);
-        }
-
-        return $classes;
-    }
-
-    /**
-     * Debug method for the recursive class builder method.
-     *
-     * @param int $rCount
-     * @param string $className
-     * @param array $properties
-     */
-    private function debugParseClasses(
-        int $rCount,
-        $className,
-        array $properties
-    ) {
-        echo "recursion: $rCount" . PHP_EOL;
-        echo "className: $className" . PHP_EOL;
-        echo "properties:" . PHP_EOL;
-        // display each property.
-        foreach ($properties as $property) {
-            echo "  {$property['paramType']} {$property['name']}" . PHP_EOL;
-        }
-
-        echo PHP_EOL;
+        return $object;
     }
 }
 ?>

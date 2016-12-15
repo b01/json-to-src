@@ -25,6 +25,10 @@ class JtpException extends Exception
     /** @var integer Indicates tried to set a bad default access level. */
     const BAD_ACCESS_LEVEL = 6;
 
+    const BAD_PROPERTY_TYPE = 7;
+
+    const PROPERTY_EMPTY = 8;
+
     /**
      * List of error codes and their corresponding messages.
      *
@@ -36,7 +40,9 @@ class JtpException extends Exception
         self::BAD_NAMESPACE => 'Invalid character(s) found when trying to use the namespace "%s".',
         self::BAD_CLASS_NAME => 'Invalid character(s) found when trying to use the class name "%s".',
         self::NOT_WRITEABLE => 'Directory is not writable: "%s".',
-        self::BAD_ACCESS_LEVEL => 'Access level "%s" is not allowed. Only: %s'
+        self::BAD_ACCESS_LEVEL => 'Access level "%s" is not allowed. Only: %s',
+        self::BAD_PROPERTY_TYPE => '%s should be of type "%s", actual type is %s.',
+        self::PROPERTY_EMPTY => '%s::%s has been set to null, needs to be "%s".'
     ];
 
     /**

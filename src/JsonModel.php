@@ -18,17 +18,6 @@ trait JsonModel
      */
     public function __toString()
     {
-        $data = [];
-        $vars = get_object_vars($this);
-
-        foreach ($vars as $property => $value) {
-            if ($value === null) {
-                continue;
-            }
-
-            $data[$property] = $value;
-        }
-
         return json_encode($this->jsonSerialize());
     }
 
@@ -40,7 +29,7 @@ trait JsonModel
      * @return string
      */
     public function jsonSerialize() {
-        $data = [];
+        $data = new stdClass();
         $vars = get_object_vars($this);
 
         foreach ($vars as $property => $value) {
@@ -48,7 +37,7 @@ trait JsonModel
                 continue;
             }
 
-            $data[$property] = $value;
+            $data->{$property} = $value;
         }
 
         return $data;
@@ -94,13 +83,13 @@ trait JsonModel
      * @param \stdClass $object
      * @return $this
      */
-    public function rSetByObject(stdClass $object)
+    public function rSetByObject(stdClass $object, $nameSpace = '')
     {
         $vars = get_object_vars($object);
 
         if (is_array($vars)) {
             foreach ($vars as $property => $value) {
-                $class = __NAMESPACE__ . '\\' . $property;
+                $class = $nameSpace . '\\' . ucfirst($property);
 
                 $value = $this->hydrateClass($value, $class);
 
@@ -125,14 +114,14 @@ trait JsonModel
     {
         if (($aType = gettype($value)) !== $type) {
             throw new JtpException(
-                RateGrabberException::BAD_PROPERTY_TYPE,
+                JtpException::BAD_PROPERTY_TYPE,
                 [$property, $type, $aType]
             );
         }
 
         if ($value === null) {
             throw new JtpException(
-                RateGrabberException::PROPERTY_EMPTY,
+                JtpException::PROPERTY_EMPTY,
                 [$class, $property, $aType]
             );
         }
@@ -160,7 +149,7 @@ trait JsonModel
                 // Cast each item in the array then append it to the property.
                 $temp = [];
                 foreach ($value as $key => $item) {
-                    $item = $this->rSetByObject($item, $class);
+                    $item = $this->hydrateClass($item, $class);
                     $temp[] = $item;
                 }
                 $newValue = $temp;

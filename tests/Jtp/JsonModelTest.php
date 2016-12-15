@@ -1,6 +1,7 @@
 <?php namespace Jtp\Tests\Models;
 
 use Jtp\JsonModel;
+use Jtp\JtpException;
 use Jtp\Tests\Mocks\ModelT;
 
 /**
@@ -33,12 +34,12 @@ class JsonModelTest extends \PHPUnit_Framework_TestCase
     /**
      * @covers ::validateProperty
      */
-    public function testCanInValidateProperty()
+    public function testCanInvalidateProperty()
     {
         $this->setExpectedException(
-            RateGrabberException::class,
+            JtpException::class,
             '',
-            RateGrabberException::PROPERTY_EMPTY
+            JtpException::PROPERTY_EMPTY
         );
 
         $this->model->validateProperty('test', 'NULL', null);
@@ -47,12 +48,12 @@ class JsonModelTest extends \PHPUnit_Framework_TestCase
     /**
      * @covers ::validateProperty
      */
-    public function testCanInValidatePropertyType()
+    public function testCanInvalidatePropertyType()
     {
         $this->setExpectedException(
-            RateGrabberException::class,
+            JtpException::class,
             '',
-            RateGrabberException::BAD_PROPERTY_TYPE
+            JtpException::BAD_PROPERTY_TYPE
         );
 
         $this->model->validateProperty('test', 'integer', '1');
@@ -60,16 +61,90 @@ class JsonModelTest extends \PHPUnit_Framework_TestCase
 
     /**
      * @covers ::setByJson
-     * @covers ::__toString
-     * @covers ::jsonSerialize
+     * @uses \Jtp\JsonModel::__toString
+     * @uses \Jtp\JsonModel::jsonSerialize
      */
     public function testCanSetByJsonString()
     {
         $fixture = '{"name":1234, "year": null}';
         $mt = new ModelT();
         $mt->setByJson($fixture);
+
+        $this->assertEquals(1234, $mt->getName());
+    }
+
+    /**
+     * @covers ::__toString
+     * @covers ::jsonSerialize
+     */
+    public function testCanCastModelToSString()
+    {
+        $mt = new ModelT();
+        $mt->setName('test');
         $actual = (string) $mt;
 
-        $this->assertEquals('{"name":1234}', $actual);
+        $this->assertEquals('{"name":"test"}', $actual);
+    }
+
+    /**
+     * @covers ::__toString
+     * @covers ::jsonSerialize
+     */
+    public function testCastingToAStringWillOmitPropertiesSetToNull()
+    {
+        $mt = new ModelT();
+        $mt->setName(null);
+        $actual = (string) $mt;
+
+        $this->assertEquals('{}', $actual);
+    }
+
+    /**
+     * @covers ::setByObject
+     */
+    public function testCanInitializeAModelWithStdClassObject()
+    {
+        $fixture = new \stdClass();
+        $fixture->name = 'test';
+        $mt = new ModelT();
+        $mt->setByObject($fixture);
+
+        $this->assertEquals('test', $mt->getName());
+    }
+
+    /**
+     * @covers ::rSetByObject
+     * @covers ::hydrateClass
+     */
+    public function testCanInitializeAModelWithStdClassObjectRecursively()
+    {
+        $fixture = new \stdClass();
+        $fixture->name = 'test';
+        $fixture->makeT = new \stdClass();
+        $fixture->makeT->company = 'Kohirens';
+
+        $mt = new ModelT();
+        $mt->rSetByObject($fixture, '\\Jtp\\Tests\\Mocks');
+        $actual = $mt->getMakeT();
+
+        $this->assertEquals('Kohirens', $actual->getCompany());
+    }
+
+    /**
+     * @covers ::rSetByObject
+     * @covers ::hydrateClass
+     */
+    public function testCanInitializeAModelWithAnArrayOfStdClassObjectsRecursively()
+    {
+        $fixture = new \stdClass();
+        $fixture->engine = [];
+        $fixture->engine[] = new \stdClass();
+        $fixture->engine[0]->serial = 1234;
+
+        $mt = new ModelT();
+        $mt->rSetByObject($fixture, '\\Jtp\\Tests\\Mocks');
+        $actual = $mt->getEngine();
+
+        $this->assertEquals(1234, $actual[0]->getSerial());
     }
 }

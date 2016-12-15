@@ -27,7 +27,6 @@
     <logging>
         <log type="coverage-text" target="php://stdout" showUncoveredFiles="false" />
         <log type="coverage-clover" target=".phpunit/coverage.xml" />
-        <log type="coverage-html" target=".phpunit/html" lowUpperBound="35" highLowerBound="90" />
         <log type="testdox-text" target="php://stdout" />
     </logging>
 </phpunit>

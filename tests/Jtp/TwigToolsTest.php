@@ -77,6 +77,27 @@ class TwigToolsTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
+     * @covers ::getFuncType
+     * @covers ::__construct
+     */
+    public function testCanOmitTypeHintsForScalars()
+    {
+        $tt = new TwigTools(false);
+        $fixture = [
+            'name' => 'test',
+            'type' => 'integer',
+            'paramType' => 'int',
+            'arrayType' => '',
+            'value' => '1234',
+            'isCustomType' => false
+        ];
+        $expected = '';
+        $actual = $tt->getFuncType($fixture, 'Tests');
+
+        $this->assertEquals($expected, $actual);
+    }
+
+    /**
      * @covers ::getAssignProp
      * @covers ::__construct
      */
