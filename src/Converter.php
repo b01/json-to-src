@@ -8,6 +8,8 @@ use Twig_Template;
  */
 class Converter
 {
+    use Debug;
+
     /** @var string Regular expression use to verify a class name.*/
     const REGEX_CLASS = '/^[a-zA-Z][a-zA-Z0-9_]*$/';
 
@@ -64,29 +66,6 @@ class Converter
 
     /** @var \Twig_Template */
     private $unitTestTemplate;
-
-    /** @var boolean */
-    private static $debug = false;
-
-    /**
-     * Indicates debugging is on.
-     *
-     * @return type
-     */
-    static public function isDebugOn()
-    {
-        return self::$debug;
-    }
-
-    /**
-     * Turn debugging off/on.
-     *
-     * @param bool $debug
-     */
-    static public function setDebugMode($debug)
-    {
-        self::$debug = $debug;
-    }
 
     /**
      * Constructor
