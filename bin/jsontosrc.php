@@ -20,7 +20,7 @@ $flags = ''
     . 'a::' // optional default property access level.
     . 'c::' // optional callback function before template render.
     . 'r::' // optional recursion limit.
-    . 'd' // optional debug mode.
+    . 'v' // optional debug mode.
     . 't' // optional turn on type hints.
 ;
 
@@ -60,7 +60,7 @@ if ($outDir === null) {
 }
 
 $namespace = getArg(-1, $indexArgs, 'n', $options, '');
-$debug = (bool) getArg(-1, $indexArgs, 'd', $options, false);
+$verbosity = (bool) getArg(-1, $indexArgs, 'v', $options, false);
 $typeHints = (bool) getArg(-1, $indexArgs, 't', $options, false);
 $unitTestDir = getArg(-1, $indexArgs, 'u', $options, null);
 $accessLvl = getArg(-1, $indexArgs, 'a', $options, 'private');
@@ -69,7 +69,7 @@ $recursionLimit = getArg(-1, $indexArgs, 'r', $options, 20);
 
 try {
     $jsonString = file_get_contents($jsonFile);
-    ClassParser::setDebugMode($debug);
+    ClassParser::setDebugMode($verbosity);
     $classParser = new ClassParser($recursionLimit);
     $classParser->withAccessLevel($accessLvl);
 
