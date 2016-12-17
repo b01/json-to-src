@@ -7,6 +7,7 @@ require_once __DIR__
 
 require_once __DIR__ . DIRECTORY_SEPARATOR . 'command-line-helpers.php';
 
+use Jtp\ClassParser;
 use Jtp\Converter;
 use Ulrichsg\Getopt\Getopt;
 
@@ -68,8 +69,9 @@ $recursionLimit = getArg(-1, $indexArgs, 'r', $options, 20);
 
 try {
     $jsonString = file_get_contents($jsonFile);
-    Converter::setDebugMode($debug);
-    $converter = new Converter($jsonString, $className, $namespace, $recursionLimit);
+    ClassParser::setDebugMode($debug);
+    $classParser = new ClassParser($recursionLimit);
+    $classParser->withAccessLevel($accessLvl);
 
     // Use a template engine to generate source code string.
     $twigLoader = new Twig_Loader_Filesystem(__DIR__
@@ -84,9 +86,9 @@ try {
     // Load template for generating the class unit test source code.
     $unitTestTemplate = $twig->loadTemplate('class-unit-php.twig');
 
+    $converter = new Converter($classParser);
     $converter->setClassTemplate($classTemplate)
-        ->setUnitTestTemplate($unitTestTemplate)
-        ->withAccessLevel($accessLvl);
+        ->setUnitTestTemplate($unitTestTemplate);
 
     // Pre-template callback function
     if (file_exists($callbackScript)) {
@@ -94,7 +96,7 @@ try {
         $converter->withPreRenderCallback($preRenderCallback);
     }
 
-    $converter->generateSource();
+    $converter->generateSource($jsonString, $className, $namespace);
     $converter->save($outDir, $unitTestDir);
     echo 'Done' . PHP_EOL;
 } catch (\Exception $error) {
