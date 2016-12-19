@@ -15,6 +15,9 @@ class ClassParser
     /** @var array The allowed access levels for the source code. */
     private $allowedAccessLevels;
 
+    /** @var string A prefix added to nested classes to prevent class collision. */
+    private $namespacePrefix;
+
     /** @var integer Limit the amount of recursion for nested objects. */
     private $recursionLimit;
 
@@ -45,6 +48,7 @@ class ClassParser
             'public'
         ];
         $this->accessLevel = $this->allowedAccessLevels[0];
+        $this->namespacePrefix = 'N';
     }
 
     /**
@@ -54,12 +58,12 @@ class ClassParser
      * @param \stdClass $stdClass
      * @return array
      */
-    public function __invoke(stdClass $stdClass, $className, $namspace = '')
+    public function __invoke(stdClass $stdClass, $className, $namespace = '')
     {
         $objectVars = get_object_vars($stdClass);
         $classTypeData = [];
 
-        $this->parseData($objectVars, $className, $classTypeData);
+        $this->parseData($objectVars, $className, $classTypeData, $namespace);
 
         return $classTypeData;
     }
@@ -99,6 +103,16 @@ class ClassParser
     }
 
     /**
+     * Set a prefix to generated namespaces. The default is "N".
+     *
+     * @param string $prefix
+     */
+    public function withNamespacePrefix($prefix)
+    {
+        $this->namespacePrefix = $prefix;
+    }
+
+    /**
      * @param string $name
      * @param array $classes
      * @return string
@@ -127,25 +141,33 @@ class ClassParser
      *
      * @param array $property
      * @param mixed $value
+     * @param string $namespace
+     * @param string $subNamespace
      * @return array
      */
-    private function parseProperty($property, $value)
-    {
+    private function parseProperty(
+        $property,
+        $value,
+        $namespace = '',
+        $subNamespace = ''
+    ) {
         $type = gettype($value);
         $isCustomType = $type === 'object';
+        $arrayType = '';
 
         if ($isCustomType) {
             $type = ucfirst($property);
-            $paramType = $type;
+            $paramType = empty($namespace) ? $type : $namespace . '\\' . $type;
         } else {
             $paramType = array_key_exists($type, $this->typeMap)
                 ? $this->typeMap[$type]
                 : $type;
         }
 
-        $isAnArrayOfObjects = is_array($value)
-            && count($value) > 0
-            && is_object($value[0]);
+        if (is_array($value) && count($value) > 0 && is_object($value[0])) {
+            $arrayType = empty($subNamespace) ? ucfirst($property)
+                : $subNamespace . '\\' . ucfirst($property);
+        }
 
         if (is_array($value)) {
             $val = '[]';
@@ -167,7 +189,8 @@ class ClassParser
             'isCustomType' => $isCustomType,
             'paramType' => $paramType,
             'value' => $val,
-            'arrayType' => $isAnArrayOfObjects ? $property : ''
+            'arrayType' => $arrayType,
+            'namespace' => $namespace
         ];
     }
 
@@ -194,7 +217,8 @@ class ClassParser
     private function parseData(
         array $objectVars,
         $className,
-        array & $classes
+        array & $classes,
+        $namespace = ''
     ) {
         static $rCount = 0;
 
@@ -203,42 +227,57 @@ class ClassParser
             return $classes;
         }
 
+        // Build a unique namespace for the nested class.
+        $subNamespace = $namespace . '\\' . $this->namespacePrefix . $className;
+
         // Loop through keys.
         foreach ($objectVars as $key => $value) {
-            $keyProps = $this->parseProperty($key, $value);
+            $keyProps = $this->parseProperty($key, $value, $namespace, $subNamespace);
             $properties[] = $keyProps;
 
             // Build class from object in an array.
             if (!empty($keyProps['arrayType'])) {
                 $value = array_pop($value);
-                $key = $keyProps['arrayType'];
             }
 
             // Build class from a nested object.
             if (is_object($value)) {
-                $newClassName = ucfirst($key);
-                $newObjectVars = get_object_vars($value);
+                $subClassName = ucfirst($key);
+                $subClassVars = get_object_vars($value);
 
-                if (count($newObjectVars) > 0) {
+                if (count($subClassVars) > 0) {
                     $rCount++;
                     $this->parseData(
-                        $newObjectVars,
-                        $newClassName,
-                        $classes
+                        $subClassVars,
+                        $subClassName,
+                        $classes,
+                        $subNamespace
                     );
                     $rCount--;
                 }
             }
         }
 
+        $fullClassName = $namespace . '\\' . $className;
+        // Generate unique namespace for nested classes.
+        // Change Converter::save method to place sources in namespader direcotires.
+        // Add method to set namespace prefix.
+        // Add command line switch to set namespace prefix.
+        // TODO: Test using the pre-render callback to modify namespaces.
+        // TODO: Generate namespace map.
         if (count($properties) > 0) {
             // Patch to prevent classes from being overwritten.
-            $className = $this->getIncrementalClassName($className, $classes);
-            $classes[$className] = $properties;
+            $classKey = $this->getIncrementalClassName($className, $classes);
+            $classes[$classKey] = [
+                'name' => $className,
+                'classNamespace' => $namespace,
+                'fullName' => $fullClassName,
+                'properties' => $properties
+            ];
         }
 
         if (self::isDebugOn()) {
-            $this->debugParseClasses($rCount, $className, $properties);
+            $this->debugParseClasses($rCount, $fullClassName, $properties);
         }
 
         return $classes;
@@ -248,20 +287,21 @@ class ClassParser
      * Debug method for the recursive class builder method.
      *
      * @param int $rCount
-     * @param string $className
+     * @param string $fullClassName
      * @param array $properties
      */
     private function debugParseClasses(
         $rCount,
-        $className,
+        $fullClassName,
         array $properties
     ) {
-        echo "recursion: $rCount" . PHP_EOL;
-        echo "className: $className" . PHP_EOL;
+        echo "recursion: {$rCount}" . PHP_EOL;
+        echo "fullName: {$fullClassName}" . PHP_EOL;
         echo "properties:" . PHP_EOL;
         // display each property.
         foreach ($properties as $property) {
-            echo "  {$property['paramType']} {$property['name']}" . PHP_EOL;
+            $arraType = !empty($property['arrayType']) ? '<' . ucfirst($property['arrayType']) . '>' : '';
+            echo "  {$property['paramType']}{$arraType} {$property['name']}" . PHP_EOL;
         }
 
         echo PHP_EOL;

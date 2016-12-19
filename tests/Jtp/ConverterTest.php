@@ -101,6 +101,7 @@ class ConverterTest extends \PHPUnit_Framework_TestCase
 
     /**
      * @covers ::generateSource
+     * @covers ::buildSource
      * @covers ::setClassTemplate
      * @uses \Jtp\Converter::__construct
      * @uses \Jtp\Converter::getRootObject
@@ -113,14 +114,27 @@ class ConverterTest extends \PHPUnit_Framework_TestCase
 
         $this->mockClassParser->expects($this->once())
             ->method('__invoke')
-            ->willReturn(['Test' => [['name' => 'prop', 'type' => 'integer', 'value' => 1234, 'classNameSpace' => 'T']]]);
+            ->with(
+                $this->anything(),
+                $this->equalTo('Test'),
+                $this->equalTo('T'))
+            ->willReturn([
+                'Test' => [
+                    'name' => 'Test',
+                    'fullName' => '\Test',
+                    'classNamespace' => 'T',
+                    'properties' => [
+                        ['name' => 'prop', 'type' => 'integer', 'value' => 1234, 'namespace' => '\Test']
+                    ]
+                ]
+            ]);
         $this->mockTwigTemplate->expects($this->once())
             ->method('render')
             ->with($this->callback(function ($arg1) {
-                return $arg1['className'] === 'Test'
-                    && $arg1['classProperties'][0]['name'] === 'prop'
-                    && $arg1['classProperties'][0]['type'] === 'integer'
-                    && $arg1['classProperties'][0]['value'] === 1234
+                return $arg1['name'] === 'Test'
+                    && $arg1['properties'][0]['name'] === 'prop'
+                    && $arg1['properties'][0]['type'] === 'integer'
+                    && $arg1['properties'][0]['value'] === 1234
                     && $arg1['classNamespace'] === 'T';
             }))
             ->willReturn('test');
@@ -129,11 +143,12 @@ class ConverterTest extends \PHPUnit_Framework_TestCase
         $converter->setClassTemplate($this->mockTwigTemplate);
         $actual = $converter->generateSource($jsonString, $className, $namespace);
 
-        $this->assertEquals('test', $actual['classes']['Test']);
+        $this->assertEquals('test', $actual['Test']['source']);
     }
 
     /**
      * @covers ::save
+     * @covers ::saveSourceFile
      * @uses \Jtp\Converter::__construct
      * @uses \Jtp\Converter::getRootObject
      * @uses \Jtp\Converter::generateSource
@@ -144,32 +159,43 @@ class ConverterTest extends \PHPUnit_Framework_TestCase
         $jsonString = '{"prop":1234}';
         $className = 'Test';
         $namespace = 'T';
+        $fixture = TEST_TEMP_DIR
+            . DIRECTORY_SEPARATOR . 'T'
+            . DIRECTORY_SEPARATOR . 'Test.php';
+
+        if (file_exists($fixture)) {
+            unlink($fixture);
+        }
 
         $this->mockClassParser->expects($this->once())
             ->method('__invoke')
             ->willReturn([
-                'Test' => [[
-                    'name' => 'prop',
-                    'type' => 'integer',
-                    'value' => 1234,
-                    'classNameSpace' => 'T'
-                ]]
+                'Test' => [
+                    'name' => 'Test',
+                    'fullName' => 'T\\Test',
+                    'classNamespace' => 'T',
+                    'properties' => [[
+                        'name' => 'prop',
+                        'type' => 'integer',
+                        'value' => 1234,
+                    ]]
+                ]
             ]);
 
         $this->mockTwigTemplate->expects($this->once())
             ->method('render')
-            ->willReturn('test');
+            ->willReturn(__FUNCTION__);
 
         $converter = new Converter($this->mockClassParser);
         $converter->setClassTemplate($this->mockTwigTemplate);
         $converter->generateSource($jsonString, $className, $namespace);
         $converter->save(TEST_TEMP_DIR);
 
-        $acutal = file_get_contents(
-            TEST_TEMP_DIR . DIRECTORY_SEPARATOR . 'Test.php'
-        );
+        $acutal = file_get_contents($fixture);
 
-        $this->assertEquals('test', $acutal);
+        $this->assertEquals(__FUNCTION__, $acutal);
+
+        unlink($fixture);
     }
 
     /**
@@ -188,12 +214,17 @@ class ConverterTest extends \PHPUnit_Framework_TestCase
         $this->mockClassParser->expects($this->once())
             ->method('__invoke')
             ->willReturn([
-                'Test' => [[
-                    'name' => 'prop',
-                    'type' => 'integer',
-                    'value' => 1234,
-                    'classNameSpace' => 'T'
-                ]]
+                'Test' => [
+                    'name' => 'Test',
+                    'fullName' => '\Test',
+                    'classNamespace' => '',
+                    'properties' => [[
+                        'name' => 'prop',
+                        'type' => 'integer',
+                        'value' => 1234,
+                        'classNameSpace' => 'T'
+                    ]]
+                ]
             ]);
 
         $this->mockTwigTemplate->expects($this->once())
@@ -219,26 +250,35 @@ class ConverterTest extends \PHPUnit_Framework_TestCase
         $jsonString = '{"prop":1234}';
         $className = 'Test';
         $namespace = 'T';
-        $expected = 'unit test';
-        $fixtureDir = TEST_TEMP_DIR . DIRECTORY_SEPARATOR  . 'tests';
+        $fixtureDir = TEST_TEMP_DIR . DIRECTORY_SEPARATOR . 'test';
+        $file1 = TEST_TEMP_DIR . DIRECTORY_SEPARATOR . 'T' . DIRECTORY_SEPARATOR . 'Test.php';
+        $file2 = TEST_TEMP_DIR
+            . DIRECTORY_SEPARATOR . 'test'
+            . DIRECTORY_SEPARATOR . 'T'
+            . DIRECTORY_SEPARATOR . 'TestTest.php';
 
         $this->mockClassParser->expects($this->once())
             ->method('__invoke')
             ->willReturn([
-                'Test' => [[
-                    'name' => 'prop',
-                    'type' => 'integer',
-                    'value' => 1234,
-                    'classNameSpace' => 'T'
-                ]]
+                'Test' => [
+                    'name' => 'Test',
+                    'fullName' => 'T\\Test',
+                    'classNamespace' => 'T',
+                    'properties' => [[
+                        'name' => 'prop',
+                        'type' => 'integer',
+                        'value' => 1234,
+                        'classNameSpace' => 'T'
+                    ]]
+                ]
             ]);
 
         $this->mockTwigTemplate->expects($this->exactly(2))
             ->method('render')
             ->with($this->callback(function ($arg1) {
-                return $arg1['className'] !== 'Test4';
+                return $arg1['name'] !== 'Test4';
             }))
-            ->willReturn($expected);
+            ->willReturn(__FUNCTION__);
 
         $converter = new Converter($this->mockClassParser);
         $converter->setClassTemplate($this->mockTwigTemplate)
@@ -247,11 +287,14 @@ class ConverterTest extends \PHPUnit_Framework_TestCase
 
         $converter->save(TEST_TEMP_DIR, $fixtureDir);
 
-        $actual = file_get_contents(
-            $fixtureDir . DIRECTORY_SEPARATOR . 'TestTest.php'
-        );
+        $actual1 = file_get_contents($file1);
+        $actual2 = file_get_contents($file2);
 
-        $this->assertEquals($expected, $actual);
+        $this->assertEquals(__FUNCTION__, $actual1);
+        $this->assertEquals(__FUNCTION__, $actual2);
+
+        deleteDir(TEST_TEMP_DIR . DIRECTORY_SEPARATOR . 'T');
+        deleteDir(TEST_TEMP_DIR . DIRECTORY_SEPARATOR . 'test' . DIRECTORY_SEPARATOR . 'T');
     }
 
     /**
@@ -270,17 +313,18 @@ class ConverterTest extends \PHPUnit_Framework_TestCase
         $this->mockClassParser->expects($this->once())
             ->method('__invoke')
             ->willReturn([
-                'Test' => [[
-                    'name' => 'prop',
-                    'type' => 'integer',
-                    'value' => 1234,
-                    'classNameSpace' => 'T'
-                ]]
+                'Test' => [
+                    'name' => 'Test',
+                    'fullName' => '\Test',
+                    'classNamespace' => '',
+                    'properties' => [[
+                        'name' => 'prop',
+                        'type' => 'integer',
+                        'value' => 1234,
+                        'classNameSpace' => 'T'
+                    ]]
+                ]
             ]);
-
-        $this->mockTwigTemplate->expects($this->once())
-            ->method('render')
-            ->willReturn('test');
 
         $mockTwigTemplate2  = $this->getMockBuilder(Twig_Template::class)
             ->disableOriginalConstructor()
@@ -288,14 +332,14 @@ class ConverterTest extends \PHPUnit_Framework_TestCase
 
         $mockTwigTemplate2->expects($this->once())
             ->method('render')
-            ->willReturn('test');
+            ->willReturn(__FUNCTION__);
 
         $converter = new Converter($this->mockClassParser);
         $converter->setClassTemplate($this->mockTwigTemplate);
         $converter->setUnitTestTemplate($mockTwigTemplate2);
         $actual = $converter->generateSource($jsonString, $className, $namespace);
 
-        $this->assertEquals('test', $actual['classes']['Test']);
+        $this->assertEquals(__FUNCTION__, $actual['Test']['unitSource']);
     }
 
     /**
@@ -306,7 +350,7 @@ class ConverterTest extends \PHPUnit_Framework_TestCase
      * @uses \Jtp\Converter::setClassTemplate
      * @uses \Jtp\Converter::setUnitTestTemplate
      */
-    public function testCanTurnOffGeneratingUnitTests()
+    public function testWillNotGenerateUnitTestsWhenNoUnitTestTemplateIsSet()
     {
         $jsonString = '{"prop":1234}';
         $className = 'Test';
@@ -315,12 +359,17 @@ class ConverterTest extends \PHPUnit_Framework_TestCase
         $this->mockClassParser->expects($this->once())
             ->method('__invoke')
             ->willReturn([
-                'Test' => [[
-                    'name' => 'prop',
-                    'type' => 'integer',
-                    'value' => 1234,
-                    'classNameSpace' => 'T'
-                ]]
+                'Test' => [
+                    'name' => 'Test',
+                    'fullName' => 'T\\Test',
+                    'classNamespace' => 'T',
+                    'properties' => [[
+                        'name' => 'prop',
+                        'type' => 'integer',
+                        'value' => 1234,
+                        'classNameSpace' => 'T'
+                    ]]
+                ]
             ]);
 
         $this->mockTwigTemplate->expects($this->once())
@@ -331,11 +380,12 @@ class ConverterTest extends \PHPUnit_Framework_TestCase
         $converter->setClassTemplate($this->mockTwigTemplate);
         $actual = $converter->generateSource($jsonString, $className, $namespace);
 
-        $this->assertCount(0, $actual['tests']);
+        $this->assertEmpty(0, $actual['Test']['unitSource']);
     }
 
     /**
      * @covers ::generateSource
+     * @covers ::buildSource
      * @covers ::withPreRenderCallback
      * @uses \Jtp\Converter::__construct
      * @uses \Jtp\Converter::getRootObject
@@ -343,19 +393,24 @@ class ConverterTest extends \PHPUnit_Framework_TestCase
      */
     public function testCanSetACallbackForPreRenderModifications()
     {
-        $jsonString = '{"prop":"It\'s me"}';
+        $jsonString = '{"prop":1234}';
         $className = 'Test';
         $namespace = 'T';
 
         $this->mockClassParser->expects($this->once())
             ->method('__invoke')
             ->willReturn([
-                'Test' => [[
-                    'name' => 'prop',
-                    'type' => 'integer',
-                    'value' => 1234,
-                    'classNameSpace' => 'T'
-                ]]
+                'Test' => [
+                    'name' => 'Test',
+                    'fullName' => 'T\\Test',
+                    'classNamespace' => 'T',
+                    'properties' => [[
+                        'name' => 'prop',
+                        'type' => 'integer',
+                        'value' => 1234,
+                        'classNameSpace' => 'T'
+                    ]]
+                ]
             ]);
 
         $converter = new Converter($this->mockClassParser);
@@ -363,7 +418,7 @@ class ConverterTest extends \PHPUnit_Framework_TestCase
 
         $unitTest = $this;
         $converter->withPreRenderCallback(function ($arg1, $arg2) use ($unitTest) {
-            $unitTest->assertEquals('prop', $arg1['classProperties'][0]['name']);
+            $unitTest->assertEquals('prop', $arg1['properties'][0]['name']);
             $unitTest->assertFalse($arg2);
             return $arg1;
         });
@@ -389,19 +444,24 @@ class ConverterTest extends \PHPUnit_Framework_TestCase
         $this->mockClassParser->expects($this->once())
             ->method('__invoke')
             ->willReturn([
-                'Test' => [[
-                    'name' => 'prop',
-                    'type' => 'integer',
-                    'value' => 1234,
-                    'classNameSpace' => 'T'
-                ]]
+                'Test' => [
+                    'name' => 'Test',
+                    'fullName' => 'T\\Test',
+                    'classNamespace' => 'T',
+                    'properties' => [[
+                        'name' => 'prop',
+                        'type' => 'integer',
+                        'value' => 1234,
+                        'classNameSpace' => 'T'
+                    ]]
+                ]
             ]);
 
         $converter = new Converter($this->mockClassParser);
         $converter->setClassTemplate($this->mockTwigTemplate)
             ->setUnitTestTemplate($this->mockTwigTemplate)
             ->withPreRenderCallback(function ($arg1, $arg2) use ($unitTest, & $counter) {
-                $unitTest->assertEquals('prop', $arg1['classProperties'][0]['name']);
+                $unitTest->assertEquals('prop', $arg1['properties'][0]['name']);
                 if ($counter === 0) {
                     $unitTest->assertFalse($arg2);
                 } else {
@@ -449,6 +509,148 @@ class ConverterTest extends \PHPUnit_Framework_TestCase
 
         $converter = new Converter($this->mockClassParser);
         $converter->generateSource($jsonString, $className);
+    }
+
+
+
+    /**
+     * @covers ::save
+     * @uses \Jtp\Converter::__construct
+     * @uses \Jtp\Converter::getRootObject
+     * @uses \Jtp\Converter::generateSource
+     * @uses \Jtp\Converter::setClassTemplate
+     * @uses \Jtp\Converter::setUnitTestTemplate
+     */
+    public function testWillSaveASingleNestedObjectInNamspaceSubDirectory()
+    {
+        $jsonString = '{"baz":{"member1":1234}}';
+        $className = 'Bar';
+        $namespace = 'Foo';
+        // Foo/
+        //   XBar/
+        //     Baz.php
+        //   Bar.php
+        $expected = 'unit test';
+        $fixtureDir = TEST_TEMP_DIR . DIRECTORY_SEPARATOR;
+
+        $this->mockClassParser->expects($this->once())
+            ->method('__invoke')
+            ->willReturn([
+                'Bar' => [
+                    'name' => 'Bar',
+                    'fullName' => 'Foo\\Bar',
+                    'classNamespace' => 'Foo',
+                    'properties' => [[
+                        'access' => '',
+                        'name' => '',
+                        'type' => '',
+                        'isCustomType' => '',
+                        'paramType' => '',
+                        'value' => '',
+                        'arrayType' => '',
+                        'namespace' => 'Foo'
+                    ]]
+                ],
+                'Baz' => [
+                    'name' => 'Baz',
+                    'fullName' => 'Foo\\XBar\\Baz',
+                    'classNamespace' => 'Foo\\XBar',
+                    'properties' => [[
+                        'access' => '',
+                        'name' => '',
+                        'type' => '',
+                        'isCustomType' => '',
+                        'paramType' => '',
+                        'value' => '',
+                        'arrayType' => '',
+                        'namespace' => 'Foo\\XBar'
+                    ]]
+                ]
+            ]);
+
+        $this->mockTwigTemplate->expects($this->any(4))
+            ->method('render')
+            ->willReturn($expected);
+
+        $converter = new Converter($this->mockClassParser);
+        $converter->setClassTemplate($this->mockTwigTemplate);
+        $converter->setUnitTestTemplate($this->mockTwigTemplate);
+        $converter->generateSource($jsonString, $className, $namespace);
+
+        $srcDir = $fixtureDir . 'src';
+        $testDir = $fixtureDir . 'test';
+        $converter->save($srcDir, $testDir);
+
+        $srcDir = $fixtureDir . 'src' . DIRECTORY_SEPARATOR;
+        $testDir = $fixtureDir . 'test' . DIRECTORY_SEPARATOR;
+        $file1 = $srcDir . $namespace . DIRECTORY_SEPARATOR . 'Bar.php';
+        $file2 = $srcDir . $namespace . DIRECTORY_SEPARATOR . 'XBar' . DIRECTORY_SEPARATOR . 'Baz.php';
+        $file3 = $testDir . $namespace . DIRECTORY_SEPARATOR . 'BarTest.php';
+        $file4 = $testDir . $namespace . DIRECTORY_SEPARATOR . 'XBar' . DIRECTORY_SEPARATOR . 'BazTest.php';
+
+        $actual = file_exists($file1)
+            && file_exists($file2)
+            && file_exists($file3)
+            && file_exists($file4);
+
+        $this->assertTrue($actual);
+
+        deleteDir(TEST_TEMP_DIR . DIRECTORY_SEPARATOR . 'src' . DIRECTORY_SEPARATOR . 'Foo');
+        deleteDir(TEST_TEMP_DIR . DIRECTORY_SEPARATOR . 'test' . DIRECTORY_SEPARATOR . 'Foo');
+    }
+
+    /**
+     * @covers ::save
+     * @uses \Jtp\Converter::__construct
+     * @uses \Jtp\Converter::generateSource
+     * @uses \Jtp\Converter::getRootObject
+     * @uses \Jtp\Converter::buildSource
+     * @expectedException \Jtp\JtpException
+     */
+    public function testCannotSaveUnitTestToNonExistingDirectory()
+    {
+        $converter = new Converter($this->mockClassParser);
+        $converter->save(TEST_TEMP_DIR, 'TEST_TEMP_DIR');
+    }
+
+    /**
+     * @covers ::saveClassMap
+     * @uses \Jtp\Converter::__construct
+     * @uses \Jtp\Converter::generateSource
+     */
+    public function testCanSaveAClassMap()
+    {
+        $jsonString = '{"prop":1234}';
+        $className = 'Foo';
+        $fixture = [
+            'Foo' => [
+                'name' => 'Foo',
+                'fullName' => 'Foo',
+                'classNamespace' => 'Foo',
+                'properties' => [[
+                    'access' => 'private',
+                    'name' => 'prop',
+                    'type' => 'integer',
+                    'isCustomType' => false,
+                    'paramType' => 'int',
+                    'value' => 1234,
+                    'arrayType' => '',
+                    'namespace' => ''
+                ]]
+            ]
+        ];
+
+        $this->mockClassParser->expects($this->once())
+            ->method('__invoke')
+            ->with($this->callback(function ($arg1) {
+                return $arg1->prop === 1234;
+            }))
+            ->willReturn($fixture);
+
+        $converter = new Converter($this->mockClassParser);
+        $converter->generateSource($jsonString, $className);
+
+        $this->assertTrue($converter->saveClassMap(TEST_TEMP_DIR));
     }
 }
 ?>

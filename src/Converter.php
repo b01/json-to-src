@@ -36,13 +36,6 @@ class Converter
      */
     private $preRenderCallback;
 
-    /**
-     * List of strings that represent the PHP source generated from the JSON.
-     *
-     * @var array
-     */
-    private $sources;
-
     /** @var array Source code for unit test. */
     private $unitTests;
 
@@ -61,10 +54,6 @@ class Converter
     ) {
         $this->classParser = $classParser;
         $this->classes = [];
-        $this->sources = [
-            'classes' => [],
-            'tests' => []
-        ];
         $this->unitTests = [];
     }
 
@@ -73,45 +62,36 @@ class Converter
      *
      * @return array Each element is the PHP source.
      */
-    public function generateSource($jsonString, $className, $namespace = '')
+    public function generateSource($jsonString, $className, $namespaceBase = '')
     {
         if (preg_match(self::REGEX_CLASS, $className) !== 1) {
             throw new JtpException(JtpException::BAD_CLASS_NAME, [$className]);
         }
 
-        if (!empty($namespace)
-            && preg_match(self::REGEX_NS, $namespace) !== 1) {
-            throw new JtpException(JtpException::BAD_NAMESPACE, [$namespace]);
+        if (!empty($namespaceBase)
+            && preg_match(self::REGEX_NS, $namespaceBase) !== 1) {
+            throw new JtpException(JtpException::BAD_NAMESPACE, [$namespaceBase]);
         }
 
         $stdObject = $this->getRootObject($jsonString);
-        $this->classes = ($this->classParser)($stdObject, $className, $namespace);
-        $doCallback = is_callable($this->preRenderCallback);
+        $function = $this->classParser;
+        $this->classes = $function($stdObject, $className, $namespaceBase);
 
-        foreach ($this->classes as $className => $properties) {
-            $testData = $renderData = $data = [
-                'className' => $className,
-                'classProperties' => $properties,
-                'classNamespace' => $namespace
-            ];
-
-            if ($doCallback) {
-                $renderData = ($this->preRenderCallback)($renderData, false);
-            }
-
-            $this->sources['classes'][$className] = $this->classTemplate->render($renderData);
-
-            if ($this->unitTestTemplate instanceof Twig_Template) {
-                if ($doCallback) {
-                    $testData = ($this->preRenderCallback)($testData, true);
-                }
-
-                $this->sources['tests'][$className . 'Test']
-                    = $this->unitTestTemplate->render($testData);
-            }
+        foreach ($this->classes as &$classData) {
+           $classData['source'] = $this->buildSource(
+                $classData,
+                $this->classTemplate,
+                $this->preRenderCallback
+            );
+            $classData['unitSource'] = $this->buildSource(
+                $classData,
+                $this->unitTestTemplate,
+                $this->preRenderCallback,
+                true
+            );
         }
 
-        return $this->sources;
+        return $this->classes;
     }
 
     /**
@@ -124,25 +104,51 @@ class Converter
      */
     public function save($directory, $unitTestDir = null)
     {
+        // Validate the directory.
         if (!is_writeable($directory)) {
             throw new JtpException(JtpException::NOT_WRITEABLE, [$directory]);
         }
 
-        foreach($this->sources['classes'] as $className => $code) {
-            $filename = $directory . DIRECTORY_SEPARATOR . $className . '.php';
-
-            file_put_contents($filename, $code);
+        // When set, validate the unit test directory.
+        if ($unitTestDir !== null && (!is_dir($unitTestDir) || !is_writeable($unitTestDir))) {
+            throw new JtpException(JtpException::NOT_WRITEABLE, [$unitTestDir]);
         }
 
-        if (!is_dir($unitTestDir) || !is_writeable($directory)) {
+        if ($unitTestDir === null) {
             $unitTestDir = $directory;
         }
 
-        foreach($this->sources['tests'] as $className => $code) {
-            $filename = $unitTestDir . DIRECTORY_SEPARATOR . $className . '.php';
-
-            file_put_contents($filename, $code);
+        foreach($this->classes as $class) {
+            $this->saveSourceFile($directory, $class['classNamespace'], $class['name'], $class['source']);
+            $this->saveSourceFile($unitTestDir, $class['classNamespace'], $class['name'] . 'Test', $class['unitSource']);
         }
+    }
+
+    /**
+     * For every key/field found in the JSON, show the name used for the class. This is a PHP array output to a file
+     * "classMap.php".
+     *
+     * @return boolean Indicate true when the file was written.
+     */
+    public function saveClassMap($directory)
+    {
+        $classMap = "/**\n"
+            . " * Each key is based on the field pulled from the JSON, the\n"
+            . " * value is the name used in the source code output.\n"
+            . " */\n"
+            . "<?php\n\$classMap = [\n";
+
+        foreach($this->classes as $key => $class) {
+            $classMap .= "\t['{$key}' => '{$class['name']}'],\n";
+
+            foreach($class['properties'] as $property) {
+                $classMap .= "\t['{$key}_{$property['name']}' => '{$property['name']}'],\n";
+            }
+        }
+
+        $classMap .= "];\n";
+
+        return file_put_contents($directory . DIRECTORY_SEPARATOR . 'classMap.php', $classMap) > 0;
     }
 
     /**
@@ -172,10 +178,11 @@ class Converter
     }
 
     /**
-     * Set a function to call before rendering the source code.
+     * Filter the class data through a callback that allows the client to transform the source output.
      *
+     * Set a function to call before rendering the source code.
      * The callable will be passed the render data, and a boolean value to
-     * indicate "TRUE" when generating code for a unit test and "FALSE" for a
+     * indicate "TRUE" when building the source code for a unit test and "FALSE" for a
      * actual class.
      *
      * @return Converter
@@ -187,6 +194,33 @@ class Converter
         $this->preRenderCallback = $callable;
 
         return $this;
+    }
+
+    /**
+     * Build the source code.
+     *
+     * @param array $classData
+     * @param \Twig_Template $template
+     * @param callable $callback
+     */
+    private function buildSource(
+        array $classData,
+        Twig_Template $template = null,
+        callable $callback = null,
+        $isUnitTest = false
+    ) {
+        $source = '';
+
+        if ($template instanceof Twig_Template) {
+            // Filter the class data through a callback that allows the client to transform the source output.
+            if (is_callable($callback)) {
+                $classData = $callback($classData, $isUnitTest);
+            }
+
+            $source = $template->render($classData);
+        }
+
+        return $source;
     }
 
     /**
@@ -220,6 +254,29 @@ class Converter
         }
 
         return $object;
+    }
+
+    /**
+     *
+     * @param string $directory
+     * @param string $classNamespace
+     * @param string $name
+     * @param string $source
+     */
+    private function saveSourceFile($directory, $classNamespace, $name, $source)
+    {
+        $namespaceDir = $directory . DIRECTORY_SEPARATOR . $classNamespace;
+        $namespaceDir = str_replace('\\', DIRECTORY_SEPARATOR, $namespaceDir);
+
+        if (!is_dir($namespaceDir)) {
+            mkdir($namespaceDir, 0777, true);
+        }
+
+        $filename = $namespaceDir . DIRECTORY_SEPARATOR . $name . '.php';
+
+        if (!empty($source)) {
+            file_put_contents($filename, $source);
+        }
     }
 }
 ?>

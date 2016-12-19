@@ -34,9 +34,7 @@ class TwigTools extends Twig_Extension
         return [
             'ucfirst' => new Twig_SimpleFilter(
                 'ucfirst',
-                function ($arg) {
-                    return ucfirst($arg);
-                }
+                [$this, 'capFirst']
             )
         ];
     }
@@ -69,9 +67,7 @@ class TwigTools extends Twig_Extension
             ),
             'getYear' => new Twig_SimpleFunction(
                 'getYear',
-                function () {
-                    return (string)date('Y');
-                }
+                [$this, 'getYear']
             )
         ];
     }
@@ -114,24 +110,21 @@ class TwigTools extends Twig_Extension
      * Get the function parameter type.
      *
      * @param array $property
-     * @param string $namespace
      * @return mixed|string
      */
-    public function getFuncType(array $property, $namespace = '')
+    public function getFuncType(array $property)
     {
         $output = $property['paramType'] . ' ';
 
-        if ($property['paramType'] == 'array'
+        if ($property['paramType'] === 'array'
             && !empty($property['arrayType'])) {
             $output = $property['arrayType'] . ' ';
         } else if (!$this->doScalarTypeHints && is_scalar($property['value'])) {
             // Remove scalar type hints.
             $output = '';
-        }
-
-        // Prefix the namespace to custom types.
-        if ($property['isCustomType'] && !empty($namespace)) {
-            $output = '\\' . $namespace . '\\' . $output;
+        } else if ($property['isCustomType']) {
+            // Prefix the namespace to custom types.
+            $output = '\\' . $output;
         }
 
         return $output;
@@ -164,6 +157,16 @@ class TwigTools extends Twig_Extension
     }
 
     /**
+     * Get the year.
+     *
+     * @return string
+     */
+    public function getYear()
+    {
+        return (string) date('Y');
+    }
+
+    /**
      * Produce a string of $this->{property} = {value};
      *
      * @param array $prop
@@ -175,11 +178,7 @@ class TwigTools extends Twig_Extension
         $output = '';
 
         if (!empty($prop['arrayType'])) {
-            $output = '@var '. $prop['paramType'];// . ' of \\' . $namespace . '\\' . $prop['arrayType'];
-            if (!empty($namespace)) {
-                $output .= ' of \\' .$namespace;
-            }
-            $output .= '\\' . $prop['arrayType'];
+            $output = '@var '. $prop['paramType'] . ' of \\' . $prop['arrayType'];
         } else if ($prop['isCustomType'] === true) {
             $output = '@var ';
             if (!empty($namespace)) {
@@ -191,6 +190,19 @@ class TwigTools extends Twig_Extension
         }
 
         return $output;
+    }
+
+    /**
+     * Capitalize on the first letter of a word.
+     *
+     * Wrapper for Twig.
+     *
+     * @param string $word
+     * @return string
+     */
+    public function capFirst($word)
+    {
+        return ucfirst($word);
     }
 }
 ?>

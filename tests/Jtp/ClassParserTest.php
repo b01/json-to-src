@@ -65,7 +65,7 @@ class ClassParserTest extends \PHPUnit_Framework_TestCase
         $namespace = 'T';
         $classParser = new ClassParser();
         $sources = $classParser($stdClass, $className, $namespace);
-        $actual = $sources['Test'][0];
+        $actual = $sources['Test']['properties'][0];
 
         $this->assertEquals('array', $actual['type']);
         $this->assertEquals('[]', $actual['value']);
@@ -84,7 +84,7 @@ class ClassParserTest extends \PHPUnit_Framework_TestCase
         $namespace = 'T';
         $classParser = new ClassParser();
         $sources = $classParser($stdClass, $className, $namespace);
-        $actual = $sources['Test'][0];
+        $actual = $sources['Test']['properties'][0];
 
         $this->assertEquals('string', $actual['type']);
         $this->assertEquals('It\\\'s me', $actual['value']);
@@ -106,7 +106,7 @@ class ClassParserTest extends \PHPUnit_Framework_TestCase
         $classParser->withAccessLevel('public');
 
         $sources = $classParser($stdClass, $className, $namespace);
-        $actual = $sources['Test'][0]['access'];
+        $actual = $sources['Test']['properties'][0]['access'];
 
         $this->assertEquals('public', $actual);
     }
@@ -148,7 +148,7 @@ class ClassParserTest extends \PHPUnit_Framework_TestCase
             ->withAccessLevel('test');
 
         $sources = $classParser($stdClass, $className, $namespace);
-        $actual = $sources['Test'][0]['access'];
+        $actual = $sources['Test']['properties'][0]['access'];
 
         $this->assertEquals('test', $actual);
     }
@@ -173,7 +173,7 @@ class ClassParserTest extends \PHPUnit_Framework_TestCase
 
         $this->setOutputCallback(function ($actual) {
             $message = "recursion: 0" . PHP_EOL
-                . "className: Test" . PHP_EOL
+                . "fullName: \Test" . PHP_EOL
                 . "properties:" . PHP_EOL
                 . "  int prop" . PHP_EOL . PHP_EOL;
             $this->assertEquals($message, $actual);
@@ -223,6 +223,7 @@ class ClassParserTest extends \PHPUnit_Framework_TestCase
     /**
      * @covers ::parseProperty
      * @uses \Jtp\ClassParser::__construct
+     * @uses \Jtp\ClassParser::__invoke
      * @uses \Jtp\ClassParser::parseData
      */
     public function testCanParseAClassFromPropertyThatIsAnObject()
@@ -238,6 +239,7 @@ class ClassParserTest extends \PHPUnit_Framework_TestCase
     /**
      * @covers ::parseData
      * @uses \Jtp\ClassParser::__construct
+     * @uses \Jtp\ClassParser::__invoke
      * @uses \Jtp\ClassParser::parseProperty
      */
     public function testWillNotGoOverRecursionLimit()
@@ -249,5 +251,64 @@ class ClassParserTest extends \PHPUnit_Framework_TestCase
         $actual = $classParser($stdClass, $className, $namespace);
 
         $this->assertArrayNotHasKey('Test4', $actual);
+    }
+
+    /**
+     * @covers ::parseProperty
+     * @uses \Jtp\ClassParser::__construct
+     * @uses \Jtp\ClassParser::__invoke
+     * @uses \Jtp\ClassParser::parseData
+     */
+    public function testWillUppercaseArrayType()
+    {
+        $stdClass = json_decode('{"foo":[{"bar":1234}]}');
+        $className = 'Test';
+        $namespace = 'T';
+        $classParser = new ClassParser();
+        $classes = $classParser($stdClass, $className, $namespace);
+        $actual = $classes['Test']['properties'][0]['arrayType'];
+
+        $this->assertEquals('T\\NTest\\Foo', $actual);
+    }
+
+    /**
+     * @covers ::withNamespacePrefix
+     * @uses \Jtp\ClassParser::__construct
+     * @uses \Jtp\ClassParser::__invoke
+     * @uses \Jtp\ClassParser::parseData
+     * @uses \Jtp\ClassParser::parseProperty
+     */
+    public function testWillGenerateaANamespaceForSubClass()
+    {
+        $stdClass = json_decode('{"foo":[{"bar":1234}]}');
+        $className = 'Test';
+        $namespace = 'T';
+        $classParser = new ClassParser();
+        $classParser->withNamespacePrefix('X');
+        $classes = $classParser($stdClass, $className, $namespace);
+        $actual = $classes['Foo']['classNamespace'];
+
+        $this->assertEquals('T\\XTest', $actual);
+    }
+
+
+
+    /**
+     * @covers ::withNamespacePrefix
+     * @uses \Jtp\ClassParser::__construct
+     * @uses \Jtp\ClassParser::__invoke
+     * @uses \Jtp\ClassParser::parseData
+     * @uses \Jtp\ClassParser::parseProperty
+     */
+    public function testWillGenerateaANamespaceForSubClass2()
+    {
+        $stdClass = json_decode('{"foo":{"bar":{"baz":1234}}}');
+        $className = 'Test';
+        $namespace = 'T';
+        $classParser = new ClassParser();
+        $classes = $classParser($stdClass, $className, $namespace);
+        $actual = $classes['Bar']['fullName'];
+
+        $this->assertEquals('T\\NTest\\NFoo\\Bar', $actual);
     }
 }
