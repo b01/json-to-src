@@ -16,7 +16,7 @@ class Converter
     /** @var string Regular expression use to verify a name-space.*/
     const REGEX_NS = '/^[a-zA-Z][a-zA-Z0-9\\\\]*[a-zA-Z]?$/';
 
-    /** @var \Jtp\ClassParser */
+    /** @var \Jtp\StdClassParser */
     private $classParser;
 
     /**
@@ -45,12 +45,11 @@ class Converter
     /**
      * Constructor
      *
-     * @param string $jsonString
-     * @param \Jtp\ClassParser $classParser
+     * @param \Jtp\StdClassParser $classParser
      * @throws \Jtp\JtpException
      */
     public function __construct(
-        ClassParser $classParser
+        StdClassParser $classParser
     ) {
         $this->classParser = $classParser;
         $this->classes = [];
@@ -60,7 +59,11 @@ class Converter
     /**
      * Build source from JSON.
      *
+     * @param string $jsonString
+     * @param string $className
+     * @param string $namespaceBase
      * @return array Each element is the PHP source.
+     * @throws \Jtp\JtpException
      */
     public function generateSource($jsonString, $className, $namespaceBase = '')
     {
@@ -77,17 +80,21 @@ class Converter
         $function = $this->classParser;
         $this->classes = $function($stdObject, $className, $namespaceBase);
 
-        foreach ($this->classes as &$classData) {
-           $classData['source'] = $this->buildSource(
+        foreach ($this->classes as $classKey => &$classData) {
+            // Filter the class data through a callback that allows the client
+            // to transform the source output.
+            $callback = $this->preRenderCallback;
+            if (is_callable($callback)) {
+                $classData = $callback($classKey, $classData);
+            }
+
+            $classData['source'] = $this->buildSource(
                 $classData,
-                $this->classTemplate,
-                $this->preRenderCallback
+                $this->classTemplate
             );
             $classData['unitSource'] = $this->buildSource(
                 $classData,
-                $this->unitTestTemplate,
-                $this->preRenderCallback,
-                true
+                $this->unitTestTemplate
             );
         }
 
@@ -128,27 +135,51 @@ class Converter
      * For every key/field found in the JSON, show the name used for the class. This is a PHP array output to a file
      * "classMap.php".
      *
-     * @return boolean Indicate true when the file was written.
+     * @param string $directory Where the maps will be placed.
+     * @return boolean Indicate true when at least one file was written.
      */
-    public function saveClassMap($directory)
+    public function saveMaps($directory)
     {
         $classMap = "/**\n"
             . " * Each key is based on the field pulled from the JSON, the\n"
             . " * value is the name used in the source code output.\n"
+            . " * A key with a double \"::$\" denotes a property for that class."
             . " */\n"
             . "<?php\n\$classMap = [\n";
+        $namespaceMap = "<?php\n\$namespaceMap = [\n";
+        $namespaces = [];
 
         foreach($this->classes as $key => $class) {
-            $classMap .= "\t['{$key}' => '{$class['name']}'],\n";
+            $classMap .= "\t'{$key}' => '{$class['name']}',\n";
+
+            if (!array_key_exists($class['classNamespace'], $namespaces)) {
+                $namespaces[$class['classNamespace']] = true;
+                $namespaceMap .= "\t'{$class['classNamespace']}' => '{$class['classNamespace']}',\n";
+            }
 
             foreach($class['properties'] as $property) {
-                $classMap .= "\t['{$key}_{$property['name']}' => '{$property['name']}'],\n";
+                $classMap .= "\t'{$key}::\${$property['name']}' => '{$property['name']}',\n";
+
+                // TODO: This if block may be redundant to the one above, but I need to prove it.
+                if (!array_key_exists($class['classNamespace'], $namespaces)) {
+                    $namespaceMap .= "\t'{$property['namespace']}' => '{$property['namespace']}',\n";
+                }
             }
         }
 
         $classMap .= "];\n";
+        $namespaceMap .= "];\n";
 
-        return file_put_contents($directory . DIRECTORY_SEPARATOR . 'classMap.php', $classMap) > 0;
+        $bytes = file_put_contents(
+            $directory . DIRECTORY_SEPARATOR . 'classMap.php',
+            $classMap
+        );
+        $bytes += file_put_contents(
+            $directory . DIRECTORY_SEPARATOR . 'namespaceMap.php',
+            $namespaceMap
+        );
+
+        return $bytes > 0;
     }
 
     /**
@@ -189,7 +220,7 @@ class Converter
      * @param callable $callable
      * @return Converter
      */
-    public function withPreRenderCallback(callable $callable)
+    public function withPreRenderCallback($callable)
     {
         $this->preRenderCallback = $callable;
 
@@ -200,23 +231,16 @@ class Converter
      * Build the source code.
      *
      * @param array $classData
-     * @param \Twig_Template $template
-     * @param callable $callback
+     * @param \Twig_Template|null $template
+     * @return string
      */
     private function buildSource(
         array $classData,
-        Twig_Template $template = null,
-        callable $callback = null,
-        $isUnitTest = false
+        Twig_Template $template = null
     ) {
         $source = '';
 
         if ($template instanceof Twig_Template) {
-            // Filter the class data through a callback that allows the client to transform the source output.
-            if (is_callable($callback)) {
-                $classData = $callback($classData, $isUnitTest);
-            }
-
             $source = $template->render($classData);
         }
 

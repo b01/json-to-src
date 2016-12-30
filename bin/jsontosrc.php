@@ -7,7 +7,7 @@ require_once __DIR__
 
 require_once __DIR__ . DIRECTORY_SEPARATOR . 'command-line-helpers.php';
 
-use Jtp\ClassParser;
+use Jtp\StdClassParser;
 use Jtp\Converter;
 use Ulrichsg\Getopt\Getopt;
 
@@ -33,9 +33,9 @@ try {
     echo $err->getMessage() . PHP_EOL;
     exit(2);
 }
+
 $options = $getopt->getOptions();
 $indexArgs = $getopt->getOperands();
-
 $jsonFile = getArg(0, $indexArgs);
 
 if ($jsonFile === null) {
@@ -71,8 +71,8 @@ $nsPrefix = getArg(-1, $indexArgs, 'p', $options, 'N');
 
 try {
     $jsonString = file_get_contents($jsonFile);
-    ClassParser::setDebugMode($verbosity);
-    $classParser = new ClassParser($recursionLimit);
+    StdClassParser::setDebugMode($verbosity);
+    $classParser = new StdClassParser($recursionLimit);
     $classParser->withAccessLevel($accessLvl);
     $classParser->withNamespacePrefix($nsPrefix);
 
@@ -93,15 +93,23 @@ try {
     $converter->setClassTemplate($classTemplate)
         ->setUnitTestTemplate($unitTestTemplate);
 
+    $preRenderCallback = null;
+
     // Pre-template callback function
     if (file_exists($callbackScript)) {
         $preRenderCallback = require_once $callbackScript;
+    }
+
+    if (class_exists('JtpDataMassage')) {
+        $preRenderCallback = new JtpDataMassage();
+        $converter->withPreRenderCallback([$preRenderCallback, '__invoke']);
+    } elseif (is_callable($preRenderCallback)) {
         $converter->withPreRenderCallback($preRenderCallback);
     }
 
     $converter->generateSource($jsonString, $className, $namespace);
     $converter->save($outDir, $unitTestDir);
-    $converter->saveClassMap($outDir);
+    $converter->saveMaps($outDir);
 
     echo 'Done' . PHP_EOL;
 } catch (\Exception $error) {

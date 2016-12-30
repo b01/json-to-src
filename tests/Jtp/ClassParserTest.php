@@ -1,9 +1,9 @@
 <?php namespace Jtp\Tests;
 
-use Jtp\ClassParser;
+use Jtp\StdClassParser;
 
 /**
- * @coversDefaultClass \Jtp\ClassParser
+ * @coversDefaultClass \Jtp\StdClassParser
  */
 class ClassParserTest extends \PHPUnit_Framework_TestCase
 {
@@ -13,23 +13,23 @@ class ClassParserTest extends \PHPUnit_Framework_TestCase
      */
     public function testCanInitialize()
     {
-        $classParser = new ClassParser();
+        $classParser = new StdClassParser();
 
-        $this->assertInstanceOf(ClassParser::class, $classParser);
+        $this->assertInstanceOf(StdClassParser::class, $classParser);
     }
 
     /**
      * @covers ::__invoke
-     * @uses \Jtp\ClassParser::__construct
-     * @uses \Jtp\ClassParser::parseData
-     * @uses \Jtp\ClassParser::parseProperty
+     * @uses \Jtp\StdClassParser::__construct
+     * @uses \Jtp\StdClassParser::parseData
+     * @uses \Jtp\StdClassParser::parseProperty
      */
     public function testCanBeInvoked()
     {
         $stdObject = json_decode('{"foo":null}');
         $className = 'Test';
         $namespace = 'T';
-        $classParser = new ClassParser();
+        $classParser = new StdClassParser();
         $sources = $classParser($stdObject, $className, $namespace);
 
         $this->assertArrayHasKey('Test', $sources);
@@ -38,15 +38,15 @@ class ClassParserTest extends \PHPUnit_Framework_TestCase
     /**
      * @covers ::parseData
      * @covers ::parseProperty
-     * @uses \Jtp\ClassParser::__construct
-     * @uses \Jtp\ClassParser::__invoke
+     * @uses \Jtp\StdClassParser::__construct
+     * @uses \Jtp\StdClassParser::__invoke
      */
     public function testCanGenSubObjects()
     {
         $stdClass = json_decode('{"prop":[{"o2prop": 1234}]}');
         $className = 'Test';
         $namespace = 'T';
-        $classParser = new ClassParser();
+        $classParser = new StdClassParser();
         $sources = $classParser($stdClass, $className, $namespace);
 
         $this->assertArrayHasKey('Prop', $sources);
@@ -54,16 +54,16 @@ class ClassParserTest extends \PHPUnit_Framework_TestCase
 
     /**
      * @covers ::parseProperty
-     * @uses \Jtp\ClassParser::__construct
-     * @uses \Jtp\ClassParser::__invoke
-     * @uses \Jtp\ClassParser::parseData
+     * @uses \Jtp\StdClassParser::__construct
+     * @uses \Jtp\StdClassParser::__invoke
+     * @uses \Jtp\StdClassParser::parseData
      */
     public function testWillDefaultArrayPropertiesToEnptyArray()
     {
         $stdClass = json_decode('{"prop":[]}');
         $className = 'Test';
         $namespace = 'T';
-        $classParser = new ClassParser();
+        $classParser = new StdClassParser();
         $sources = $classParser($stdClass, $className, $namespace);
         $actual = $sources['Test']['properties'][0];
 
@@ -73,16 +73,16 @@ class ClassParserTest extends \PHPUnit_Framework_TestCase
 
     /**
      * @covers ::parseProperty
-     * @uses \Jtp\ClassParser::__construct
-     * @uses \Jtp\ClassParser::__invoke
-     * @uses \Jtp\ClassParser::parseData
+     * @uses \Jtp\StdClassParser::__construct
+     * @uses \Jtp\StdClassParser::__invoke
+     * @uses \Jtp\StdClassParser::parseData
      */
     public function testWillDefaultStringPropertiesToAnEmptyString()
     {
         $stdClass = json_decode('{"prop":"It\'s me"}');
         $className = 'Test';
         $namespace = 'T';
-        $classParser = new ClassParser();
+        $classParser = new StdClassParser();
         $sources = $classParser($stdClass, $className, $namespace);
         $actual = $sources['Test']['properties'][0];
 
@@ -92,16 +92,16 @@ class ClassParserTest extends \PHPUnit_Framework_TestCase
 
     /**
      * @covers ::withAccessLevel
-     * @uses \Jtp\ClassParser::__construct
-     * @uses \Jtp\ClassParser::parseProperty
-     * @uses \Jtp\ClassParser::parseData
+     * @uses \Jtp\StdClassParser::__construct
+     * @uses \Jtp\StdClassParser::parseProperty
+     * @uses \Jtp\StdClassParser::parseData
      */
     public function testCanChangeAccessLevelToSomethingOtherThanTheDefaultForProperties()
     {
         $stdClass = json_decode('{"prop":"It\'s me"}');
         $className = 'Test';
         $namespace = 'T';
-        $classParser = new ClassParser();
+        $classParser = new StdClassParser();
 
         $classParser->withAccessLevel('public');
 
@@ -113,9 +113,9 @@ class ClassParserTest extends \PHPUnit_Framework_TestCase
 
     /**
      * @covers ::withAccessLevel
-     * @uses \Jtp\ClassParser::__construct
-     * @uses \Jtp\ClassParser::parseProperty
-     * @uses \Jtp\ClassParser::parseData
+     * @uses \Jtp\StdClassParser::__construct
+     * @uses \Jtp\StdClassParser::parseProperty
+     * @uses \Jtp\StdClassParser::parseData
      * @expectedException \Jtp\JtpException
      *
      */
@@ -124,25 +124,25 @@ class ClassParserTest extends \PHPUnit_Framework_TestCase
         $stdClass = json_decode('{"prop":"It\'s me"}');
         $className = 'Test';
         $namespace = 'T';
-        $classParser = new ClassParser();
+        $classParser = new StdClassParser();
 
         $classParser->withAccessLevel('level');
     }
 
     /**
      * @covers ::withAllowedAccessLevels
-     * @uses \Jtp\ClassParser::__construct
-     * @uses \Jtp\ClassParser::__invoke
-     * @uses \Jtp\ClassParser::parseProperty
-     * @uses \Jtp\ClassParser::parseData
-     * @uses \Jtp\ClassParser::withAccessLevel
+     * @uses \Jtp\StdClassParser::__construct
+     * @uses \Jtp\StdClassParser::__invoke
+     * @uses \Jtp\StdClassParser::parseProperty
+     * @uses \Jtp\StdClassParser::parseData
+     * @uses \Jtp\StdClassParser::withAccessLevel
      */
     public function testCanSetWhatAccessLevelsAreAllowed()
     {
         $stdClass = json_decode('{"prop":"It\'s me"}');
         $className = 'Test';
         $namespace = 'T';
-        $classParser = new ClassParser();
+        $classParser = new StdClassParser();
 
         $classParser->withAllowedAccessLevels(['test'])
             ->withAccessLevel('test');
@@ -156,20 +156,20 @@ class ClassParserTest extends \PHPUnit_Framework_TestCase
     /**
      * @covers ::debugParseClasses
      * @covers ::parseData
-     * @uses \Jtp\ClassParser::__construct
-     * @uses \Jtp\ClassParser::__invoke
-     * @uses \Jtp\ClassParser::parseProperty
+     * @uses \Jtp\StdClassParser::__construct
+     * @uses \Jtp\StdClassParser::__invoke
+     * @uses \Jtp\StdClassParser::parseProperty
      * @uses \Jtp\Debug::isDebugOn
      * @uses \Jtp\Debug::setDebugMode
      */
     public function testCanEnableDebugging()
     {
         // Must be turned off after function completes.
-        ClassParser::setDebugMode(true);
+        StdClassParser::setDebugMode(true);
 
         $stdClass = json_decode('{"prop":1234}');
         $className = 'Test';
-        $classParser = new ClassParser();
+        $classParser = new StdClassParser();
 
         $this->setOutputCallback(function ($actual) {
             $message = "recursion: 0" . PHP_EOL
@@ -181,22 +181,22 @@ class ClassParserTest extends \PHPUnit_Framework_TestCase
 
         $classParser($stdClass, $className);
 
-        ClassParser::setDebugMode(false);
+        StdClassParser::setDebugMode(false);
     }
 
     /**
      * @covers ::getIncrementalClassName
-     * @uses \Jtp\ClassParser::__construct
-     * @uses \Jtp\ClassParser::__invoke
-     * @uses \Jtp\ClassParser::parseData
-     * @uses \Jtp\ClassParser::parseProperty
+     * @uses \Jtp\StdClassParser::__construct
+     * @uses \Jtp\StdClassParser::__invoke
+     * @uses \Jtp\StdClassParser::parseData
+     * @uses \Jtp\StdClassParser::parseProperty
      */
     public function testCanExtractAClassFromAnArrayOfObjectsWithinANestedObject()
     {
         $stdObject = json_decode('{"foo":{"foo":[{"baz":1234}]}}');
         $className = 'Test';
         $namespace = 'T';
-        $classParser = new ClassParser();
+        $classParser = new StdClassParser();
         $sources = $classParser($stdObject, $className, $namespace);
 
         $this->assertArrayHasKey('Foo_1', $sources);
@@ -204,17 +204,17 @@ class ClassParserTest extends \PHPUnit_Framework_TestCase
 
     /**
      * @covers ::getIncrementalClassName
-     * @uses \Jtp\ClassParser::__construct
-     * @uses \Jtp\ClassParser::__invoke
-     * @uses \Jtp\ClassParser::parseData
-     * @uses \Jtp\ClassParser::parseProperty
+     * @uses \Jtp\StdClassParser::__construct
+     * @uses \Jtp\StdClassParser::__invoke
+     * @uses \Jtp\StdClassParser::parseData
+     * @uses \Jtp\StdClassParser::parseProperty
      */
     public function testCanAppendNumberToClassNameToPreventCollision()
     {
         $stdClass = json_decode('{"location":{"foo":1234, "location":{"bar":1234}}}');
         $className = 'Test';
         $namespace = 'T';
-        $classParser = new ClassParser();
+        $classParser = new StdClassParser();
         $sources = $classParser($stdClass, $className, $namespace);
 
         $this->assertArrayHasKey('Location_1', $sources);
@@ -222,15 +222,15 @@ class ClassParserTest extends \PHPUnit_Framework_TestCase
 
     /**
      * @covers ::parseProperty
-     * @uses \Jtp\ClassParser::__construct
-     * @uses \Jtp\ClassParser::__invoke
-     * @uses \Jtp\ClassParser::parseData
+     * @uses \Jtp\StdClassParser::__construct
+     * @uses \Jtp\StdClassParser::__invoke
+     * @uses \Jtp\StdClassParser::parseData
      */
     public function testCanParseAClassFromPropertyThatIsAnObject()
     {
         $stdObject = json_decode('{"prop":1234, "test2":{"prop2":1234}}');
         $className = 'Test';
-        $classParser = new ClassParser();
+        $classParser = new StdClassParser();
         $actual = $classParser($stdObject, $className);
 
         $this->assertArrayHasKey('Test2', $actual);
@@ -238,16 +238,16 @@ class ClassParserTest extends \PHPUnit_Framework_TestCase
 
     /**
      * @covers ::parseData
-     * @uses \Jtp\ClassParser::__construct
-     * @uses \Jtp\ClassParser::__invoke
-     * @uses \Jtp\ClassParser::parseProperty
+     * @uses \Jtp\StdClassParser::__construct
+     * @uses \Jtp\StdClassParser::__invoke
+     * @uses \Jtp\StdClassParser::parseProperty
      */
     public function testWillNotGoOverRecursionLimit()
     {
         $stdClass = json_decode('{"prop":1234, "test2":{"prop2":1234, "test3":{"prop":1234, "test4":{"prop":1234}}}}');
         $className = 'Test';
         $namespace = 'T';
-        $classParser = new ClassParser();
+        $classParser = new StdClassParser();
         $actual = $classParser($stdClass, $className, $namespace);
 
         $this->assertArrayNotHasKey('Test4', $actual);
@@ -255,16 +255,16 @@ class ClassParserTest extends \PHPUnit_Framework_TestCase
 
     /**
      * @covers ::parseProperty
-     * @uses \Jtp\ClassParser::__construct
-     * @uses \Jtp\ClassParser::__invoke
-     * @uses \Jtp\ClassParser::parseData
+     * @uses \Jtp\StdClassParser::__construct
+     * @uses \Jtp\StdClassParser::__invoke
+     * @uses \Jtp\StdClassParser::parseData
      */
     public function testWillUppercaseArrayType()
     {
         $stdClass = json_decode('{"foo":[{"bar":1234}]}');
         $className = 'Test';
         $namespace = 'T';
-        $classParser = new ClassParser();
+        $classParser = new StdClassParser();
         $classes = $classParser($stdClass, $className, $namespace);
         $actual = $classes['Test']['properties'][0]['arrayType'];
 
@@ -273,17 +273,17 @@ class ClassParserTest extends \PHPUnit_Framework_TestCase
 
     /**
      * @covers ::withNamespacePrefix
-     * @uses \Jtp\ClassParser::__construct
-     * @uses \Jtp\ClassParser::__invoke
-     * @uses \Jtp\ClassParser::parseData
-     * @uses \Jtp\ClassParser::parseProperty
+     * @uses \Jtp\StdClassParser::__construct
+     * @uses \Jtp\StdClassParser::__invoke
+     * @uses \Jtp\StdClassParser::parseData
+     * @uses \Jtp\StdClassParser::parseProperty
      */
     public function testWillGenerateaANamespaceForSubClass()
     {
         $stdClass = json_decode('{"foo":[{"bar":1234}]}');
         $className = 'Test';
         $namespace = 'T';
-        $classParser = new ClassParser();
+        $classParser = new StdClassParser();
         $classParser->withNamespacePrefix('X');
         $classes = $classParser($stdClass, $className, $namespace);
         $actual = $classes['Foo']['classNamespace'];
@@ -295,17 +295,17 @@ class ClassParserTest extends \PHPUnit_Framework_TestCase
 
     /**
      * @covers ::withNamespacePrefix
-     * @uses \Jtp\ClassParser::__construct
-     * @uses \Jtp\ClassParser::__invoke
-     * @uses \Jtp\ClassParser::parseData
-     * @uses \Jtp\ClassParser::parseProperty
+     * @uses \Jtp\StdClassParser::__construct
+     * @uses \Jtp\StdClassParser::__invoke
+     * @uses \Jtp\StdClassParser::parseData
+     * @uses \Jtp\StdClassParser::parseProperty
      */
     public function testWillGenerateaANamespaceForSubClass2()
     {
         $stdClass = json_decode('{"foo":{"bar":{"baz":1234}}}');
         $className = 'Test';
         $namespace = 'T';
-        $classParser = new ClassParser();
+        $classParser = new StdClassParser();
         $classes = $classParser($stdClass, $className, $namespace);
         $actual = $classes['Bar']['fullName'];
 

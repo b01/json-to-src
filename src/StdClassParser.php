@@ -5,7 +5,7 @@ use stdClass;
 /**
  * Parse a stdClass into an array the can be passed trough
  */
-class ClassParser
+class StdClassParser
 {
     use Debug;
 
@@ -300,8 +300,8 @@ class ClassParser
         echo "properties:" . PHP_EOL;
         // display each property.
         foreach ($properties as $property) {
-            $arraType = !empty($property['arrayType']) ? '<' . ucfirst($property['arrayType']) . '>' : '';
-            echo "  {$property['paramType']}{$arraType} {$property['name']}" . PHP_EOL;
+            $arrayType = !empty($property['arrayType']) ? '<' . ucfirst($property['arrayType']) . '>' : '';
+            echo "  {$property['paramType']}{$arrayType} {$property['name']}" . PHP_EOL;
         }
 
         echo PHP_EOL;

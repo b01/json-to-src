@@ -1,6 +1,4 @@
-<?php
-
-namespace Jtp;
+<?php namespace Jtp;
 
 use Twig_Extension;
 use Twig_SimpleFilter;

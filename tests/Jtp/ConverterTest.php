@@ -1,6 +1,6 @@
 <?php namespace Jtp\Tests;
 
-use Jtp\ClassParser;
+use Jtp\StdClassParser;
 use Jtp\Converter;
 use Twig_Template;
 
@@ -13,12 +13,12 @@ class ConverterTest extends \PHPUnit_Framework_TestCase
     /** @var \Twig_TemplateWrapper|\PHPUnit_Framework_MockObject_MockBuilder */
     private $mockClassParser;
 
-    /** @var \Jtp\ClassParser|\PHPUnit_Framework_MockObject_MockBuilder */
+    /** @var \Jtp\StdClassParser|\PHPUnit_Framework_MockObject_MockBuilder */
     private $mockTwigTemplate;
 
     public function setUp()
     {
-        $this->mockClassParser = $this->getMockBuilder(ClassParser::class)
+        $this->mockClassParser = $this->getMockBuilder(StdClassParser::class)
             ->disableOriginalConstructor()
             ->getMock();
 
@@ -418,59 +418,10 @@ class ConverterTest extends \PHPUnit_Framework_TestCase
 
         $unitTest = $this;
         $converter->withPreRenderCallback(function ($arg1, $arg2) use ($unitTest) {
-            $unitTest->assertEquals('prop', $arg1['properties'][0]['name']);
-            $unitTest->assertFalse($arg2);
-            return $arg1;
+            $unitTest->assertEquals('Test', $arg1);
+            $unitTest->assertEquals('prop', $arg2['properties'][0]['name']);
+            return $arg2;
         });
-
-        $converter->generateSource($jsonString, $className, $namespace);
-    }
-
-    /**
-     * @covers ::generateSource
-     * @covers ::withPreRenderCallback
-     * @uses \Jtp\Converter::__construct
-     * @uses \Jtp\Converter::getRootObject
-     * @uses \Jtp\Converter::setClassTemplate
-     */
-    public function testCanSetACallbackForPreRenderModificationsOfUnitTestSeparately()
-    {
-        $jsonString = '{"prop":"It\'s me"}';
-        $className = 'Test';
-        $namespace = 'T';
-        $unitTest = $this;
-        $counter = 0;
-
-        $this->mockClassParser->expects($this->once())
-            ->method('__invoke')
-            ->willReturn([
-                'Test' => [
-                    'name' => 'Test',
-                    'fullName' => 'T\\Test',
-                    'classNamespace' => 'T',
-                    'properties' => [[
-                        'name' => 'prop',
-                        'type' => 'integer',
-                        'value' => 1234,
-                        'classNameSpace' => 'T'
-                    ]]
-                ]
-            ]);
-
-        $converter = new Converter($this->mockClassParser);
-        $converter->setClassTemplate($this->mockTwigTemplate)
-            ->setUnitTestTemplate($this->mockTwigTemplate)
-            ->withPreRenderCallback(function ($arg1, $arg2) use ($unitTest, & $counter) {
-                $unitTest->assertEquals('prop', $arg1['properties'][0]['name']);
-                if ($counter === 0) {
-                    $unitTest->assertFalse($arg2);
-                } else {
-                    $unitTest->assertTrue($arg2);
-                }
-                $counter = $counter + 1;
-
-                return $arg1;
-            });
 
         $converter->generateSource($jsonString, $className, $namespace);
     }
@@ -614,7 +565,7 @@ class ConverterTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
-     * @covers ::saveClassMap
+     * @covers ::saveMaps
      * @uses \Jtp\Converter::__construct
      * @uses \Jtp\Converter::generateSource
      */
@@ -650,7 +601,7 @@ class ConverterTest extends \PHPUnit_Framework_TestCase
         $converter = new Converter($this->mockClassParser);
         $converter->generateSource($jsonString, $className);
 
-        $this->assertTrue($converter->saveClassMap(TEST_TEMP_DIR));
+        $this->assertTrue($converter->saveMaps(TEST_TEMP_DIR));
     }
 }
 ?>
