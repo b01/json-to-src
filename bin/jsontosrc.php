@@ -112,7 +112,7 @@ try {
     $converter->saveMaps($outDir);
 
     echo 'Done' . PHP_EOL;
-} catch (\Exception $error) {
+} catch (Exception $error) {
     echo $error->getMessage() . PHP_EOL;
 }
 

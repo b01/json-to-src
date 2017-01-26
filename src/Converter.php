@@ -29,6 +29,9 @@ class Converter
     /** @var Twig_Template */
     private $classTemplate;
 
+    /** @var  array A copy of classes for saving map data. */
+    private $mapData;
+
     /**
      * Function to receive render data before render for alteration.
      *
@@ -54,6 +57,7 @@ class Converter
         $this->classParser = $classParser;
         $this->classes = [];
         $this->unitTests = [];
+        $this->mapData = [];
     }
 
     /**
@@ -79,6 +83,8 @@ class Converter
         $stdObject = $this->getRootObject($jsonString);
         $function = $this->classParser;
         $this->classes = $function($stdObject, $className, $namespaceBase);
+        // Mack a copy for generating the maps (class and namespace).
+        $this->mapData = $this->classes;
 
         foreach ($this->classes as $classKey => &$classData) {
             // Filter the class data through a callback that allows the client
@@ -125,7 +131,7 @@ class Converter
             $unitTestDir = $directory;
         }
 
-        foreach($this->classes as $class) {
+        foreach ($this->classes as $class) {
             $this->saveSourceFile($directory, $class['classNamespace'], $class['name'], $class['source']);
             $this->saveSourceFile($unitTestDir, $class['classNamespace'], $class['name'] . 'Test', $class['unitSource']);
         }
@@ -149,7 +155,7 @@ class Converter
         $namespaceMap = "<?php\n\$namespaceMap = [\n";
         $namespaces = [];
 
-        foreach($this->classes as $key => $class) {
+        foreach($this->mapData as $key => $class) {
             $classMap .= "\t'{$key}' => '{$class['name']}',\n";
 
             if (!array_key_exists($class['classNamespace'], $namespaces)) {
