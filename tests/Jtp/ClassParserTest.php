@@ -173,7 +173,6 @@ class ClassParserTest extends \PHPUnit_Framework_TestCase
 
         $this->setOutputCallback(function ($actual) {
             $message = "recursion: 0" . PHP_EOL
-                . "fullName: \Test" . PHP_EOL
                 . "properties:" . PHP_EOL
                 . "  int prop" . PHP_EOL . PHP_EOL;
             $this->assertEquals($message, $actual);
@@ -300,14 +299,14 @@ class ClassParserTest extends \PHPUnit_Framework_TestCase
      * @uses \Jtp\StdClassParser::parseData
      * @uses \Jtp\StdClassParser::parseProperty
      */
-    public function testWillGenerateaANamespaceForSubClass2()
+    public function testWillGenerateANamespaceForSubClass2()
     {
         $stdClass = json_decode('{"foo":{"bar":{"baz":1234}}}');
         $className = 'Test';
         $namespace = 'T';
         $classParser = new StdClassParser();
         $classes = $classParser($stdClass, $className, $namespace);
-        $actual = $classes['Bar']['fullName'];
+        $actual = $classes['Bar']['classNamespace'] . '\\' . $classes['Bar']['name'];
 
         $this->assertEquals('T\\NTest\\NFoo\\Bar', $actual);
     }

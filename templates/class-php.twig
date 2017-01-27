@@ -1,6 +1,6 @@
 <?php {%- if classNamespace is not empty %} namespace {{ classNamespace }};{% endif %}
 {% autoescape false %}
-{#{% set fullClassName = getFullNameSpace(classNamespace, className) %}#}
+{% set fullClassName = getFullNameSpace(classNamespace, className) %}
 {{ useStmts }}
 
 /**
@@ -49,7 +49,7 @@ class {{ name }}{{ classAttrs }}
      * Set {{classProp.name}}.
      *
      * @param \{{ classProp.arrayType }} ${{classProp.name}}
-     * @return \{{fullName}}
+     * @return \{{fullClassName}}
      */
     public function set{{classProp.name|ucfirst}}(\{{ classProp.arrayType }} ${{classProp.name}})
     {
@@ -63,7 +63,7 @@ class {{ name }}{{ classAttrs }}
      * Set {{classProp.name}}.
      *
      * @param{% if classProp.paramType is not empty %} {% if classProp.isCustomType %}\{% endif %}{{ classProp.paramType }} {% endif %}${{classProp.name}}
-     * @return \{{fullName}}
+     * @return \{{fullClassName}}
      */
     public function set{{classProp.name|ucfirst}}({{getFuncType(classProp, classNamespace)}}${{classProp.name}})
     {

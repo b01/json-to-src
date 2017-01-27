@@ -11,6 +11,9 @@ abstract class TemplateDataMassage
     protected $classMap = [];
 
     /** @var array */
+    protected $map = [];
+
+    /** @var array */
     protected $namespaceMap = [];
 
     /**
@@ -20,67 +23,76 @@ abstract class TemplateDataMassage
      */
     public function __invoke($classKey, array $classData)
     {
-        $classData  = $this->doRenaming($classKey, $classData);
+        $classData  = $this->doRenaming($classData);
 
         return $classData;
     }
 
     /**
-     * @param string $classKey
      * @param array $classData
      * @return string
      */
-    protected function doRenaming($classKey, $classData)
+    protected function doRenaming($classData)
     {
-        if (array_key_exists($classKey, $this->classMap)) {
-            $classData['name'] = $this->classMap[$classKey];
+        // Rename class.
+        $classData['name'] = $this->getMappedName($classData['name']);
 
-            $classData['classNamespace'] = $this->renameNamespace(
-                $classData['classNamespace']
-            );
+        // Rename namespace.
+        $classData['classNamespace'] = $this->getMappedName(
+            $classData['classNamespace']
+        );
 
-            $classData['fullName'] = empty($classData['classNamespace'])
-                ? $classData['name']
-                : $classData['classNamespace'] . '\\' . $classData['name'];
-
-            $classData['properties'] = $this->renameProperties(
-                $classKey,
-                $classData['properties']
-            );
-        }
+        // Rename properties elements.
+        $classData['properties'] = $this->renameTypes(
+            $classData['name'],
+            $classData['properties']
+        );
 
         return $classData;
     }
 
     /**
-     * @param string $namespace
+     * @param string $name
      * @return string
      */
-    protected function renameNamespace($namespace)
+    protected function getMappedName($name)
     {
-        if (array_key_exists($namespace, $this->namespaceMap)) {
-            $namespace = $this->namespaceMap[$namespace];
+        if (array_key_exists($name, $this->map)) {
+            $name = $this->map[$name];
         }
 
-        return $namespace;
+        return $name;
     }
 
     /**
-     * @param string $classKey
+     * @param string $className
      * @param array $properties
      * @return array
      */
-    protected function renameProperties($classKey, array $properties)
+    protected function renameTypes($className, array $properties)
     {
         foreach ($properties as &$property) {
-            $key = $classKey . '::$' . $property['name'];
+            // Rename property.
+            $key = $className . '::$' . $property['name'];
+            $property['name'] = $this->getMappedName($key);
 
-            if (array_key_exists($key, $this->classMap)) {
-                $property['name'] = $this->classMap[$key];
-                $property['namespace'] = $this->renameNamespace(
-                    $property['namespace']
+            // Rename arrayType.
+            if (array_key_exists('arrayType', $property)) {
+                $property['arrayType'] = $this->getMappedName(
+                    $property['arrayType']
                 );
             }
+
+            // Rename paramType.
+            if ($property['isCustomType'] && array_key_exists('paramType', $property)) {
+                $property['paramType'] = $this->getMappedName(
+                    $property['paramType']
+                );
+            }
+
+            $property['namespace'] = $this->getMappedName(
+                $property['namespace']
+            );
         }
 
         return $properties;

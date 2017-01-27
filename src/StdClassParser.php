@@ -271,7 +271,6 @@ class StdClassParser
             $classes[$classKey] = [
                 'name' => $className,
                 'classNamespace' => $namespace,
-                'fullName' => $fullClassName,
                 'properties' => $properties
             ];
         }
@@ -296,7 +295,6 @@ class StdClassParser
         array $properties
     ) {
         echo "recursion: {$rCount}" . PHP_EOL;
-        echo "fullName: {$fullClassName}" . PHP_EOL;
         echo "properties:" . PHP_EOL;
         // display each property.
         foreach ($properties as $property) {
