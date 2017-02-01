@@ -144,19 +144,20 @@ class Converter
      * @param string $directory Where the maps will be placed.
      * @return boolean Indicate true when at least one file was written.
      */
-    public function saveMaps($directory)
+    public function saveMapFile($directory)
     {
-        $classMap = "/**\n"
+        $map = "/**\n"
             . " * Each key is based on the field pulled from the JSON, the\n"
             . " * value is the name used in the source code output.\n"
             . " * A key with a double \"::$\" denotes a property for that class."
             . " */\n"
-            . "<?php\n\$classMap = [\n";
-        $namespaceMap = "<?php\n\$namespaceMap = [\n";
+            . "<?php\n\$map = [\n";
+        // Group the namespace separately to easily check if one is missing.
+        $namespaceMap = "// Namespaces\n";
         $namespaces = [];
 
         foreach($this->mapData as $key => $class) {
-            $classMap .= "\t'{$key}' => '{$class['name']}',\n";
+            $map .= "\t'{$key}' => '{$class['name']}',\n";
 
             if (!array_key_exists($class['classNamespace'], $namespaces)) {
                 $namespaces[$class['classNamespace']] = true;
@@ -164,25 +165,15 @@ class Converter
             }
 
             foreach($class['properties'] as $property) {
-                $classMap .= "\t'{$key}::\${$property['name']}' => '{$property['name']}',\n";
-
-                // TODO: This if block may be redundant to the one above, but I need to prove it.
-                if (!array_key_exists($class['classNamespace'], $namespaces)) {
-                    $namespaceMap .= "\t'{$property['namespace']}' => '{$property['namespace']}',\n";
-                }
+                $map .= "\t'{$key}::\${$property['name']}' => '{$property['name']}',\n";
             }
         }
 
-        $classMap .= "];\n";
-        $namespaceMap .= "];\n";
+        $map .= $namespaceMap . "];\n";
 
         $bytes = file_put_contents(
-            $directory . DIRECTORY_SEPARATOR . 'classMap.php',
-            $classMap
-        );
-        $bytes += file_put_contents(
-            $directory . DIRECTORY_SEPARATOR . 'namespaceMap.php',
-            $namespaceMap
+            $directory . DIRECTORY_SEPARATOR . 'map.php',
+            $map
         );
 
         return $bytes > 0;

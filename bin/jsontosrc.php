@@ -109,7 +109,7 @@ try {
 
     $converter->generateSource($jsonString, $className, $namespace);
     $converter->save($outDir, $unitTestDir);
-    $converter->saveMaps($outDir);
+    $converter->saveMapFile($outDir);
 
     echo 'Done' . PHP_EOL;
 } catch (Exception $error) {
