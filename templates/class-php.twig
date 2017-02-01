@@ -62,7 +62,7 @@ class {{ name }}{{ classAttrs }}
      * Set {{classProp.name}}.
      *
      * @param{% if classProp.paramType is not empty %} {% if classProp.isCustomType %}\{% endif %}{{ classProp.paramType }} {% endif %}${{classProp.name}}
-     * @return \{{fullClassName}}
+     * @return {{ getReturnType(classProp) }}
      */
     public function set{{classProp.name|ucfirst}}({{getFuncType(classProp, classNamespace)}}${{classProp.name}})
     {
