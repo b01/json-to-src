@@ -59,6 +59,10 @@ class TwigTools extends Twig_Extension
                 'getPropStmt',
                 [$this, 'getPropStmt']
             ),
+            'getReturnType' => new Twig_SimpleFunction(
+                'getReturnType',
+                [$this, 'getReturnType']
+            ),
             'getVarType' => new Twig_SimpleFunction(
                 'getVarType',
                 [$this, 'getVarType']
@@ -168,21 +172,16 @@ class TwigTools extends Twig_Extension
      * Produce a string of $this->{property} = {value};
      *
      * @param array $prop
-     * @param string $namespace
      * @return string
      */
-    public function getVarType(array $prop, $namespace = '')
+    public function getVarType(array $prop)
     {
         $output = '';
 
         if (!empty($prop['arrayType'])) {
             $output = '@var '. $prop['paramType'] . ' of \\' . $prop['arrayType'];
         } else if ($prop['isCustomType'] === true) {
-            $output = '@var ';
-            if (!empty($namespace)) {
-                $output .= '\\' . $namespace;
-            }
-            $output .= '\\' . $prop['paramType'];
+            $output = '@var \\' . $prop['paramType'];
         } else if (!empty($prop['paramType'])) {
             $output = '@var ' . $prop['paramType'];
         }
@@ -190,6 +189,27 @@ class TwigTools extends Twig_Extension
         return $output;
     }
 
+
+    /**
+     * Get the doc-block return type.
+     *
+     * @param array $prop
+     * @return string
+     */
+    public function getReturnType(array $prop)
+    {
+        $output = '';
+
+        if (!empty($prop['arrayType'])) {
+            $output = $prop['paramType'] . ' of \\' . $prop['arrayType'];
+        } else if ($prop['isCustomType'] === true) {
+            $output = '\\' . $prop['paramType'];
+        } else if (!empty($prop['paramType'])) {
+            $output = $prop['paramType'];
+        }
+
+        return $output;
+    }
     /**
      * Capitalize on the first letter of a word.
      *

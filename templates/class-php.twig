@@ -35,8 +35,7 @@ class {{ name }}{{ classAttrs }}
     /**
      * Get {{classProp.name}}.
      *
-     * @return {% if classProp.isCustomType %}\{% endif %}{{ classProp.paramType }}
-
+     * @return {{ getReturnType(classProp) }}
      */
     public function get{{ classProp.name|ucfirst }}()
     {
@@ -49,7 +48,7 @@ class {{ name }}{{ classAttrs }}
      * Set {{classProp.name}}.
      *
      * @param \{{ classProp.arrayType }} ${{classProp.name}}
-     * @return \{{fullClassName}}
+     * @return {{ getReturnType(classProp) }}
      */
     public function set{{classProp.name|ucfirst}}(\{{ classProp.arrayType }} ${{classProp.name}})
     {

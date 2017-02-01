@@ -9,7 +9,7 @@ use Jtp\TemplateDataMassage;
  */
 class JtpDataMassage extends TemplateDataMassage
 {
-    protected $classMap = [
+    protected $map = [
         'Location_1' => 'Location',
         'Address_1' => 'Address',
         'Address_1::$address_line_1' => 'addressLine1',
@@ -21,9 +21,7 @@ class JtpDataMassage extends TemplateDataMassage
         'Employee::$id' => 'id',
         'Employee::$first_name' => 'firstName',
         'Employee::$last_name' => 'lastName',
-    ];
-
-    protected $namespaceMap = [
+// Namespaces
         'Company\NEmployee\NLocation' => 'Company\Employees\Locations',
         'Company\NEmployee' => 'Company\Employees',
         'Company\NEmployee\NDepartments' => 'Company\Employees\Departments',
