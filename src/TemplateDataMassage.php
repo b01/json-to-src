@@ -65,6 +65,25 @@ abstract class TemplateDataMassage
     }
 
     /**
+     * Class properties are stored in the map prefixed with the full class name.
+     * This method ensure that only the property name without the prefix will be
+     * returned.
+     *
+     * @param string $name
+     * @param string $prefix
+     * @return string
+     */
+    protected function getMappedPropertyName($name, $prefix)
+    {
+        $key = $prefix . $name;
+        if (array_key_exists($key, $this->map)) {
+            $name = $this->map[$key];
+        }
+
+        return $name;
+    }
+
+    /**
      * @param string $className
      * @param array $properties
      * @return array
@@ -73,8 +92,10 @@ abstract class TemplateDataMassage
     {
         foreach ($properties as &$property) {
             // Rename property.
-            $key = $className . '::$' . $property['name'];
-            $property['name'] = $this->getMappedName($key);
+            $property['name'] = $this->getMappedPropertyName(
+                $property['name'],
+                $className . '::$'
+            );
 
             // Rename arrayType.
             if (array_key_exists('arrayType', $property)) {
