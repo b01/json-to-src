@@ -60,10 +60,10 @@ class TemplateDataMassagerTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
-     * @covers ::renameProperties
+     * @covers ::renameTypes
      * @uses \Jtp\TemplateDataMassage::__invoke
      * @uses \Jtp\TemplateDataMassage::doRenaming
-     * @uses \Jtp\TemplateDataMassage::renameNamespace
+     * @uses \Jtp\TemplateDataMassage::getMappedName
      */
     public function testCanRenameProperty()
     {
@@ -87,8 +87,8 @@ class TemplateDataMassagerTest extends \PHPUnit_Framework_TestCase
      * @covers ::doRenaming
      * @uses \Jtp\TemplateDataMassage::__invoke
      * @uses \Jtp\TemplateDataMassage::doRenaming
-     * @uses \Jtp\TemplateDataMassage::renameNamespace
-     * @uses \Jtp\TemplateDataMassage::renameProperties
+     * @uses \Jtp\TemplateDataMassage::getMappedName
+     * @uses \Jtp\TemplateDataMassage::renameTypes
      */
     public function testCanRenameFullName()
     {
@@ -125,7 +125,7 @@ class TemplateDataMassagerTest extends \PHPUnit_Framework_TestCase
                     'access' => 'protected',
                     'name' => 'departments',
                     'type' => 'array',
-                    'isCustomType' => '',
+                    'isCustomType' => false,
                     'paramType' => 'array',
                     'value' => [],
                     'arrayType' => 'Company\NEmployee\Departments',
@@ -134,7 +134,8 @@ class TemplateDataMassagerTest extends \PHPUnit_Framework_TestCase
             ]
         ];
 
-        $jtpDataMassage->setMapName('Company\\NEmployee\\Departments', 'Company\\Department');
+        $jtpDataMassage->setMapName('Company\\NEmployee', 'Company');
+        $jtpDataMassage->setMapName('Departments', 'Department');
         $data = $jtpDataMassage('Employee', $fixture);
         $actual = $data['properties'][0]['arrayType'];
 
@@ -156,7 +157,7 @@ class TemplateDataMassagerTest extends \PHPUnit_Framework_TestCase
                     'access' => 'protected',
                     'name' => 'location',
                     'type' => 'Location',
-                    'isCustomType' => '1',
+                    'isCustomType' => false,
                     'paramType' => 'Company\\NEmployees\\Location',
                     'value' => 'stdClass Object',
                     'arrayType' => '',
@@ -187,7 +188,7 @@ class TemplateDataMassagerTest extends \PHPUnit_Framework_TestCase
                     'access' => 'protected',
                     'name' => 'location',
                     'type' => 'Location',
-                    'isCustomType' => '1',
+                    'isCustomType' => true,
                     'paramType' => 'Company\\NEmployees\\Location',
                     'value' => 'stdClass Object',
                     'arrayType' => '',
@@ -196,7 +197,7 @@ class TemplateDataMassagerTest extends \PHPUnit_Framework_TestCase
             ]
         ];
 
-        $jtpDataMassage->setMapName('Company\\NEmployees\\Location', 'Company\\Location');
+        $jtpDataMassage->setMapName('Company\\NEmployees', 'Company');
         $data = $jtpDataMassage('Department', $fixture);
         $actual = $data['properties'][0]['paramType'];
 

@@ -565,7 +565,7 @@ class ConverterTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
-     * @covers ::saveMaps
+     * @covers ::saveMapFile
      * @uses \Jtp\Converter::__construct
      * @uses \Jtp\Converter::generateSource
      */
@@ -601,7 +601,7 @@ class ConverterTest extends \PHPUnit_Framework_TestCase
         $converter = new Converter($this->mockClassParser);
         $converter->generateSource($jsonString, $className);
 
-        $this->assertTrue($converter->saveMaps(TEST_TEMP_DIR));
+        $this->assertTrue($converter->saveMapFile(TEST_TEMP_DIR));
     }
 }
 ?>

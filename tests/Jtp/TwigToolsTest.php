@@ -187,11 +187,11 @@ class TwigToolsTest extends \PHPUnit_Framework_TestCase
         $tt = new TwigTools(true);
         $fixture = [
             'name' => 'test',
-            'paramType' => 'Bar',
+            'paramType' => 'Tests\\Bar',
             'arrayType' => '',
             'isCustomType' => true
         ];
-        $actual = $tt->getVarType($fixture, 'Tests');
+        $actual = $tt->getVarType($fixture);
 
         $this->assertEquals('@var \\Tests\\Bar', $actual);
     }

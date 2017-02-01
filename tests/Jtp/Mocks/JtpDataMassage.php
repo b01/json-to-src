@@ -40,16 +40,6 @@ class JtpDataMassage extends TemplateDataMassage
         'Foos' => 'Foos',
     ];
 
-    public function setClassMapKey($key, $value)
-    {
-        $this->classMap[$key] = $value;
-    }
-
-    public function setNamespaceMapKey($key, $value)
-    {
-        $this->namespaceMap[$key] = $value;
-    }
-
     public function setMapName($key, $value)
     {
         $this->map[$key] = $value;
