@@ -48,7 +48,7 @@ class {{ name }}{{ classAttrs }}
      * Set {{classProp.name}}.
      *
      * @param \{{ classProp.arrayType }} ${{classProp.name}}
-     * @return {{ getReturnType(classProp) }}
+     * @return \{{ classProp.arrayType }}
      */
     public function set{{classProp.name|ucfirst}}(\{{ classProp.arrayType }} ${{classProp.name}})
     {

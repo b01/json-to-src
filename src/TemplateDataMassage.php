@@ -84,6 +84,32 @@ abstract class TemplateDataMassage
     }
 
     /**
+     * Class properties are stored in the map prefixed with the full class name.
+     * This method ensure that only the property name without the prefix will be
+     * returned.
+     *
+     * @param string $name
+     * @return string
+     */
+    protected function getMappedType($name)
+    {
+        // Spit at the class name, since in the map, classes do not contain their full name.
+        $lastSlash = strrpos($name, '\\');
+        $namespace = substr($name, 0, $lastSlash);
+        $className = substr($name, ($lastSlash + 1));
+
+        if (array_key_exists($namespace, $this->map)) {
+            $namespace = $this->getMappedName($namespace);
+        }
+
+        if (array_key_exists($className, $this->map)) {
+            $className = $this->getMappedName($className);
+        }
+
+        return $namespace . '\\' . $className;
+    }
+
+    /**
      * @param string $className
      * @param array $properties
      * @return array
@@ -98,15 +124,15 @@ abstract class TemplateDataMassage
             );
 
             // Rename arrayType.
-            if (array_key_exists('arrayType', $property)) {
-                $property['arrayType'] = $this->getMappedName(
+            if (!empty($property['arrayType'])) {
+                $property['arrayType'] = $this->getMappedType(
                     $property['arrayType']
                 );
             }
 
             // Rename paramType.
-            if ($property['isCustomType'] && array_key_exists('paramType', $property)) {
-                $property['paramType'] = $this->getMappedName(
+            if ($property['isCustomType'] && !empty($property['paramType'])) {
+                $property['paramType'] = $this->getMappedType(
                     $property['paramType']
                 );
             }
