@@ -152,24 +152,24 @@ class Converter
             . " * A key with a double \"::$\" denotes a property for that class."
             . " */\n"
             . "<?php\n\$map = [\n";
-        // Group the namespace separately to easily check if one is missing.
-        $namespaceMap = "// Namespaces\n";
-        $namespaces = [];
 
         foreach($this->mapData as $key => $class) {
-            $map .= "\t'{$key}' => '{$class['name']}',\n";
-
-            if (!array_key_exists($class['classNamespace'], $namespaces)) {
-                $namespaces[$class['classNamespace']] = true;
-                $namespaceMap .= "\t'{$class['classNamespace']}' => '{$class['classNamespace']}',\n";
+            if (empty($class['classNamespace'])) {
+                $keyName = $key;
+                $fullName = $class['name'];
+            } else {
+                $keyName = $class['classNamespace'] . '\\' . $key;
+                $fullName = $class['classNamespace'] . '\\' . $class['name'];
             }
 
+            $map .= "\t'{$keyName}' => '{$fullName}',\n";
+
             foreach($class['properties'] as $property) {
-                $map .= "\t'{$key}::\${$property['name']}' => '{$property['name']}',\n";
+                $map .= "\t'{$keyName}::\${$property['name']}' => '{$property['name']}',\n";
             }
         }
 
-        $map .= $namespaceMap . "];\n";
+        $map .= "];\n";
 
         $bytes = file_put_contents(
             $directory . DIRECTORY_SEPARATOR . 'map.php',
