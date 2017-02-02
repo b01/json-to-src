@@ -35,7 +35,8 @@ abstract class TemplateDataMassage
     protected function doRenaming($classData)
     {
         // Rename class.
-        $classData['name'] = $this->getMappedName($classData['name']);
+        $origonalClassName = $classData['name'];
+        $classData['name'] = $this->getMappedName($origonalClassName);
 
         // Rename namespace.
         $classData['classNamespace'] = $this->getMappedName(
@@ -44,7 +45,7 @@ abstract class TemplateDataMassage
 
         // Rename properties elements.
         $classData['properties'] = $this->renameTypes(
-            $classData['name'],
+            $origonalClassName,
             $classData['properties']
         );
 

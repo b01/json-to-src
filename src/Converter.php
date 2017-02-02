@@ -158,8 +158,9 @@ class Converter
                 $keyName = $key;
                 $fullName = $class['name'];
             } else {
-                $keyName = $class['classNamespace'] . '\\' . $key;
-                $fullName = $class['classNamespace'] . '\\' . $class['name'];
+                $nameSpace = str_replace('\\', '\\\\', $class['classNamespace']);
+                $keyName = $nameSpace. '\\\\' . $key;
+                $fullName = $nameSpace . '\\\\' . $class['name'];
             }
 
             $map .= "\t'{$keyName}' => '{$fullName}',\n";
