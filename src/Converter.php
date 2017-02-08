@@ -153,24 +153,23 @@ class Converter
             . " */\n"
             . "<?php\n\$map = [\n";
 
+        $namespaces = "// Namespaces\n";
+
         foreach($this->mapData as $key => $class) {
-            if (empty($class['classNamespace'])) {
-                $keyName = $key;
-                $fullName = $class['name'];
-            } else {
+            if (!empty($class['classNamespace'])) {
                 $nameSpace = str_replace('\\', '\\\\', $class['classNamespace']);
-                $keyName = $nameSpace. '\\\\' . $key;
-                $fullName = $nameSpace . '\\\\' . $class['name'];
+                $namespaces .= "\t'{$nameSpace}' => '{$nameSpace}',\n";
             }
 
-            $map .= "\t'{$keyName}' => '{$fullName}',\n";
+            $map .= "\t'{$key}' => '{$class['name']}',\n";
 
             foreach($class['properties'] as $property) {
-                $map .= "\t'{$keyName}::\${$property['name']}' => '{$property['name']}',\n";
+                $map .= "\t'{$key}::\${$property['name']}' => '{$property['name']}',\n";
             }
         }
 
-        $map .= "];\n";
+        $map .= $namespaces
+            . "];\n";
 
         $bytes = file_put_contents(
             $directory . DIRECTORY_SEPARATOR . 'map.php',

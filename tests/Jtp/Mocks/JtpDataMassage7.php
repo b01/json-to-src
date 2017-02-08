@@ -10,22 +10,19 @@ use Jtp\TemplateDataMassage;
 class JtpDataMassage extends TemplateDataMassage
 {
     protected $map = [
-        'Location_1' => 'Location',
-        'Address_1' => 'Address',
+        'Address' => 'Address',
+        'Location_1' => 'Location1',
+        'Address_1' => 'Address1',
         'Address_1::$address_line_1' => 'addressLine1',
         'Address_1::$address_line_2' => 'addressLine2',
         'Address_1::$zip_code' => 'zipCode',
         'Departments' => 'Department',
-        'Departments::$location' => 'location',
-        'Employee' => 'Employee',
-        'Employee::$id' => 'id',
         'Employee::$first_name' => 'firstName',
         'Employee::$last_name' => 'lastName',
 // Namespaces
-        'Company\NEmployee\NLocation' => 'Company\Employees\Locations',
-        'Company\NEmployee' => 'Company\Employees',
-        'Company\NEmployee\NDepartments' => 'Company\Employees\Departments',
-        'Company' => 'Company',
+        'Company\\NEmployee\\NLocation' => 'Company\\Employees\\Locations',
+        'Company\\NEmployee\\NDepartments' => 'Company\\Employees\\Departments',
+        'Company\\NEmployee' => 'Company\\Employees',
     ];
 
     public function setClassMapKey($key, $value)

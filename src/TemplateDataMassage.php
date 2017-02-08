@@ -8,13 +8,7 @@
 abstract class TemplateDataMassage
 {
     /** @var array */
-    protected $classMap = [];
-
-    /** @var array */
     protected $map = [];
-
-    /** @var array */
-    protected $namespaceMap = [];
 
     /**
      * @param string $classKey Unique key name used for the class map.
@@ -23,29 +17,21 @@ abstract class TemplateDataMassage
      */
     public function __invoke($classKey, array $classData)
     {
-        $classData  = $this->doRenaming($classData);
-
-        return $classData;
-    }
-
-    /**
-     * @param array $classData
-     * @return string
-     */
-    protected function doRenaming($classData)
-    {
         // Rename class.
-        $origonalClassName = $classData['name'];
-        $classData['name'] = $this->getMappedName($origonalClassName);
+        $classData['name'] = $this->getMappedName(
+            $classKey,
+            $classData['name']
+        );
 
         // Rename namespace.
         $classData['classNamespace'] = $this->getMappedName(
+            $classData['classNamespace'],
             $classData['classNamespace']
         );
 
         // Rename properties elements.
         $classData['properties'] = $this->renameTypes(
-            $origonalClassName,
+            $classKey,
             $classData['properties']
         );
 
@@ -53,30 +39,18 @@ abstract class TemplateDataMassage
     }
 
     /**
-     * @param string $name
-     * @return string
-     */
-    protected function getMappedName($name)
-    {
-        if (array_key_exists($name, $this->map)) {
-            $name = $this->map[$name];
-        }
-
-        return $name;
-    }
-
-    /**
+     * Get the mapped name of a class/namespace/property.
+     *
      * Class properties are stored in the map prefixed with the full class name.
      * This method ensure that only the property name without the prefix will be
      * returned.
      *
+     * @param string $key
      * @param string $name
-     * @param string $prefix
      * @return string
      */
-    protected function getMappedPropertyName($name, $prefix)
+    protected function getMappedName($key, $name)
     {
-        $key = $prefix . $name;
         if (array_key_exists($key, $this->map)) {
             $name = $this->map[$key];
         }
@@ -92,41 +66,47 @@ abstract class TemplateDataMassage
      * @param string $name
      * @return string
      */
-    protected function getMappedType($name)
+    protected function getMappedType($classKey, $name)
     {
         // Spit at the class name, since in the map, classes do not contain their full name.
         $lastSlash = strrpos($name, '\\');
         $namespace = substr($name, 0, $lastSlash);
         $className = substr($name, ($lastSlash + 1));
 
+        // Update the namespace when its been renamed.
         if (array_key_exists($namespace, $this->map)) {
-            $namespace = $this->getMappedName($namespace);
+            $namespace = $this->getMappedName($namespace, $namespace);
         }
 
-        if (array_key_exists($className, $this->map)) {
-            $className = $this->getMappedName($className);
+        // Update the class name when its been renamed.
+        if (array_key_exists($classKey, $this->map)) {
+            $className = $this->getMappedName($classKey, $className);
         }
 
+        // Return it as a whole
         return $namespace . '\\' . $className;
     }
 
     /**
-     * @param string $className
+     * @param string $classKey
      * @param array $properties
      * @return array
      */
-    protected function renameTypes($className, array $properties)
+    protected function renameTypes($classKey, array $properties)
     {
         foreach ($properties as &$property) {
             // Rename property.
-            $property['name'] = $this->getMappedPropertyName(
-                $property['name'],
-                $className . '::$'
+            $key = $classKey . '::$' . $property['name'];
+
+            $property['name'] = $this->getMappedName(
+                $key,
+                $property['name']
             );
 
             // Rename arrayType.
             if (!empty($property['arrayType'])) {
                 $property['arrayType'] = $this->getMappedType(
+                    $classKey,
                     $property['arrayType']
                 );
             }
@@ -134,11 +114,13 @@ abstract class TemplateDataMassage
             // Rename paramType.
             if ($property['isCustomType'] && !empty($property['paramType'])) {
                 $property['paramType'] = $this->getMappedType(
+                    $classKey,
                     $property['paramType']
                 );
             }
 
             $property['namespace'] = $this->getMappedName(
+                $property['namespace'],
                 $property['namespace']
             );
         }
