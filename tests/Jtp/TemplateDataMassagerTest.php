@@ -133,6 +133,7 @@ class TemplateDataMassagerTest extends \PHPUnit_Framework_TestCase
                     'paramType' => 'array',
                     'value' => [],
                     'arrayType' => 'Company\\NEmployee\\Departments',
+                    'arrayTypeClassKey' => 'Departments',
                     'namespace' => 'Company',
                 ]
             ]

@@ -116,7 +116,7 @@ abstract class TemplateDataMassage
             // Rename arrayType.
             if (!empty($property['arrayType'])) {
                 $property['arrayType'] = $this->getMappedType(
-                    $classKey,
+                    $property['arrayTypeClassKey'],
                     $property['arrayType']
                 );
             }

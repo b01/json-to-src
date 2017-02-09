@@ -1,0 +1,22 @@
+{
+    "first_name": "Jane",
+    "last_name": "Doe",
+    "addresses": [{
+            "address_line_1": "12 Dove"
+        },
+        {
+            "address_line_1": "451 Penny Lane"
+        }
+    ],
+    "employers": [{
+        "salary": "Hourly",
+        "commission": true,
+        "addresses": [{
+                "street": "21 Jump"
+            },
+            {
+                "street": "1969 Maple street"
+            }
+        ]
+    }]
+}

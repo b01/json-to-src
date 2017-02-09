@@ -290,8 +290,6 @@ class ClassParserTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals('T\\XTest', $actual);
     }
 
-
-
     /**
      * @covers ::withNamespacePrefix
      * @uses \Jtp\StdClassParser::__construct
@@ -309,5 +307,27 @@ class ClassParserTest extends \PHPUnit_Framework_TestCase
         $actual = $classes['Bar']['classNamespace'] . '\\' . $classes['Bar']['name'];
 
         $this->assertEquals('T\\NTest\\NFoo\\Bar', $actual);
+    }
+
+    /**
+     * @covers ::withNamespacePrefix
+     * @uses \Jtp\StdClassParser::__construct
+     * @uses \Jtp\StdClassParser::__invoke
+     * @uses \Jtp\StdClassParser::parseData
+     * @uses \Jtp\StdClassParser::parseProperty
+     */
+    public function testCanSetArrayTypeClassKeyCorrectly()
+    {
+        $json = file_get_contents(FIXTURES_DIR . DIRECTORY_SEPARATOR . 'test-8.json');
+        $stdClass = json_decode($json);
+        $className = 'Person';
+        $namespace = 'World';
+        $classParser = new StdClassParser();
+        $classes = $classParser($stdClass, $className, $namespace);
+        $actual = $classes['Person']['properties'][2]['arrayTypeClassKey'];
+        $actual2 = $classes['Employers']['properties'][2]['arrayTypeClassKey'];
+
+        $this->assertEquals('Addresses', $actual);
+        $this->assertEquals('Addresses_1', $actual2);
     }
 }

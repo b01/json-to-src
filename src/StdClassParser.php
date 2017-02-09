@@ -221,6 +221,7 @@ class StdClassParser
         $namespace = ''
     ) {
         static $rCount = 0;
+        static $aryType = [];
 
         // Limit the amount of recursion that can be performed.
         if ($rCount >= $this->recursionLimit) {
@@ -233,7 +234,6 @@ class StdClassParser
         // Loop through keys.
         foreach ($objectVars as $key => $value) {
             $keyProps = $this->parseProperty($key, $value, $namespace, $subNamespace);
-            $properties[] = $keyProps;
 
             // Build class from object in an array.
             if (!empty($keyProps['arrayType'])) {
@@ -253,30 +253,33 @@ class StdClassParser
                         $classes,
                         $subNamespace
                     );
+
+                    if (array_key_exists($rCount, $aryType)) {
+                        $keyProps['arrayTypeClassKey'] = $aryType[$rCount];
+                        unset($aryType[$rCount]);
+                    }
+
                     $rCount--;
                 }
             }
+
+            $properties[] = $keyProps;
         }
 
-        $fullClassName = $namespace . '\\' . $className;
-        // Generate unique namespace for nested classes.
-        // Change Converter::save method to place sources in namespader direcotires.
-        // Add method to set namespace prefix.
-        // Add command line switch to set namespace prefix.
-        // TODO: Test using the pre-render callback to modify namespaces.
-        // TODO: Generate namespace map.
         if (count($properties) > 0) {
-            // Patch to prevent classes from being overwritten.
+            // Generate a unique namespace to prevent classes from being overwritten.
             $classKey = $this->getIncrementalClassName($className, $classes);
             $classes[$classKey] = [
                 'name' => $className,
                 'classNamespace' => $namespace,
                 'properties' => $properties
             ];
+            //
+            $aryType[$rCount] = $classKey;
         }
 
         if (self::isDebugOn()) {
-            $this->debugParseClasses($rCount, $fullClassName, $properties);
+            $this->debugParseClasses($rCount, $properties);
         }
 
         return $classes;
@@ -286,12 +289,10 @@ class StdClassParser
      * Debug method for the recursive class builder method.
      *
      * @param int $rCount
-     * @param string $fullClassName
      * @param array $properties
      */
     private function debugParseClasses(
         $rCount,
-        $fullClassName,
         array $properties
     ) {
         echo "recursion: {$rCount}" . PHP_EOL;
