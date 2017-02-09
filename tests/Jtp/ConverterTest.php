@@ -16,6 +16,9 @@ class ConverterTest extends \PHPUnit_Framework_TestCase
     /** @var \Jtp\StdClassParser|\PHPUnit_Framework_MockObject_MockBuilder */
     private $mockTwigTemplate;
 
+    /** @var string */
+    private $unitDir;
+
     public function setUp()
     {
         $this->mockClassParser = $this->getMockBuilder(StdClassParser::class)
@@ -25,6 +28,9 @@ class ConverterTest extends \PHPUnit_Framework_TestCase
         $this->mockTwigTemplate = $this->getMockBuilder(Twig_Template::class)
             ->disableOriginalConstructor()
             ->getMock();
+
+        $this->unitDir = TEST_TEMP_DIR . DIRECTORY_SEPARATOR . 'unit'
+            . DIRECTORY_SEPARATOR;
     }
 
     /**
@@ -250,10 +256,9 @@ class ConverterTest extends \PHPUnit_Framework_TestCase
         $jsonString = '{"prop":1234}';
         $className = 'Test';
         $namespace = 'T';
-        $fixtureDir = TEST_TEMP_DIR . DIRECTORY_SEPARATOR . 'test';
-        $file1 = TEST_TEMP_DIR . DIRECTORY_SEPARATOR . 'T' . DIRECTORY_SEPARATOR . 'Test.php';
-        $file2 = TEST_TEMP_DIR
-            . DIRECTORY_SEPARATOR . 'test'
+        $fixtureDir = $this->unitDir . 'test';
+        $file1 = $this->unitDir . 'T' . DIRECTORY_SEPARATOR . 'Test.php';
+        $file2 = $fixtureDir
             . DIRECTORY_SEPARATOR . 'T'
             . DIRECTORY_SEPARATOR . 'TestTest.php';
 
@@ -285,7 +290,7 @@ class ConverterTest extends \PHPUnit_Framework_TestCase
             ->setUnitTestTemplate($this->mockTwigTemplate)
             ->generateSource($jsonString, $className, $namespace);
 
-        $converter->save(TEST_TEMP_DIR, $fixtureDir);
+        $converter->save($this->unitDir, $fixtureDir);
 
         $actual1 = file_get_contents($file1);
         $actual2 = file_get_contents($file2);
@@ -293,8 +298,8 @@ class ConverterTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals(__FUNCTION__, $actual1);
         $this->assertEquals(__FUNCTION__, $actual2);
 
-        deleteDir(TEST_TEMP_DIR . DIRECTORY_SEPARATOR . 'T');
-        deleteDir(TEST_TEMP_DIR . DIRECTORY_SEPARATOR . 'test' . DIRECTORY_SEPARATOR . 'T');
+        deleteDir($this->unitDir . DIRECTORY_SEPARATOR . 'T');
+        deleteDir($this->unitDir . DIRECTORY_SEPARATOR . 'test' . DIRECTORY_SEPARATOR . 'T');
     }
 
     /**
@@ -482,7 +487,6 @@ class ConverterTest extends \PHPUnit_Framework_TestCase
         //     Baz.php
         //   Bar.php
         $expected = 'unit test';
-        $fixtureDir = TEST_TEMP_DIR . DIRECTORY_SEPARATOR;
 
         $this->mockClassParser->expects($this->once())
             ->method('__invoke')
@@ -528,12 +532,12 @@ class ConverterTest extends \PHPUnit_Framework_TestCase
         $converter->setUnitTestTemplate($this->mockTwigTemplate);
         $converter->generateSource($jsonString, $className, $namespace);
 
-        $srcDir = $fixtureDir . 'src';
-        $testDir = $fixtureDir . 'test';
+        $srcDir = $this->unitDir . 'src';
+        $testDir = $this->unitDir . 'test';
         $converter->save($srcDir, $testDir);
 
-        $srcDir = $fixtureDir . 'src' . DIRECTORY_SEPARATOR;
-        $testDir = $fixtureDir . 'test' . DIRECTORY_SEPARATOR;
+        $srcDir = $this->unitDir . 'src' . DIRECTORY_SEPARATOR;
+        $testDir = $this->unitDir . 'test' . DIRECTORY_SEPARATOR;
         $file1 = $srcDir . $namespace . DIRECTORY_SEPARATOR . 'Bar.php';
         $file2 = $srcDir . $namespace . DIRECTORY_SEPARATOR . 'XBar' . DIRECTORY_SEPARATOR . 'Baz.php';
         $file3 = $testDir . $namespace . DIRECTORY_SEPARATOR . 'BarTest.php';
@@ -546,8 +550,8 @@ class ConverterTest extends \PHPUnit_Framework_TestCase
 
         $this->assertTrue($actual);
 
-        deleteDir(TEST_TEMP_DIR . DIRECTORY_SEPARATOR . 'src' . DIRECTORY_SEPARATOR . 'Foo');
-        deleteDir(TEST_TEMP_DIR . DIRECTORY_SEPARATOR . 'test' . DIRECTORY_SEPARATOR . 'Foo');
+        deleteDir($srcDir . DIRECTORY_SEPARATOR . 'Foo');
+        deleteDir($testDir . DIRECTORY_SEPARATOR . 'Foo');
     }
 
     /**

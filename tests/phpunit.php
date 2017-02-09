@@ -33,10 +33,12 @@ function deleteDir($dirPath)
     rmdir($dirPath);
 }
 
-if (is_dir(TEST_TEMP_DIR)) {
-    deleteDir(TEST_TEMP_DIR);
+$unitDir = TEST_TEMP_DIR . DIRECTORY_SEPARATOR . 'unit';
+if (is_dir($unitDir)) {
+    deleteDir($unitDir);
 }
 
-mkdir(TEST_TEMP_DIR . DIRECTORY_SEPARATOR . 'src', 0777, true);
-mkdir(TEST_TEMP_DIR . DIRECTORY_SEPARATOR . 'test', 0777, true);
+mkdir($unitDir, 0777, true);
+mkdir($unitDir . DIRECTORY_SEPARATOR . 'src', 0777, true);
+mkdir($unitDir . DIRECTORY_SEPARATOR . 'test', 0777, true);
 ?>
