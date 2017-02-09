@@ -13,9 +13,19 @@ abstract class TemplateDataMassage
     /**
      * @param string $classKey Unique key name used for the class map.
      * @param array $classData Data passed to the template engine.
-     * @return array|string
+     * @return array
      */
     public function __invoke($classKey, array $classData)
+    {
+        return $this->doRemapping($classKey, $classData);
+    }
+
+    /**
+     * @param string $classKey
+     * @param array $classData
+     * @return array
+     */
+    protected function doRemapping($classKey, array $classData)
     {
         // Rename class.
         $classData['name'] = $this->getMappedName(

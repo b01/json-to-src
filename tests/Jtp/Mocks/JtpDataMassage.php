@@ -35,8 +35,8 @@ class JtpDataMassage extends TemplateDataMassage
     ];
 
     protected $namespaceMap = [
-        'Foos\NCompany\NEmployees' => 'Foos\NCompany\NEmployees',
-        'Foos\NCompany' => 'Foos\NCompany',
+        'Foos\\NCompany\\NEmployees' => 'Foos\\NCompany\\NEmployees',
+        'Foos\\NCompany' => 'Foos\\NCompany',
         'Foos' => 'Foos',
     ];
 

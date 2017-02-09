@@ -9,6 +9,9 @@ require_once __DIR__
 
 const FIXTURES_DIR = __DIR__ . DIRECTORY_SEPARATOR . 'fixtures';
 const TEST_TEMP_DIR = __DIR__ . DIRECTORY_SEPARATOR . 'tmp';
+const MOCK_DIR = __DIR__
+    . DIRECTORY_SEPARATOR . 'Jtp'
+    . DIRECTORY_SEPARATOR . 'Mocks';
 
 function deleteDir($dirPath)
 {

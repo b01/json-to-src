@@ -1,6 +1,6 @@
 <?php namespace Jtp\Tests;
 
-use Jtp\Tests\Mocks\JtpDataMassage;
+require_once MOCK_DIR . '/JtpDataMassage7.php';
 
 /**
  * Class TemplateDataMassagerTest
@@ -18,7 +18,9 @@ class TemplateDataMassagerTest extends \PHPUnit_Framework_TestCase
 
     /**
      * @covers ::__invoke
-     * @uses \Jtp\TemplateDataMassage::doRenaming
+     * @uses \Jtp\TemplateDataMassage::doRemapping()
+     * @uses \Jtp\TemplateDataMassage::getMappedName
+     * @uses \Jtp\TemplateDataMassage::renameTypes
      */
     public function testCanRenameAClass()
     {
@@ -38,8 +40,10 @@ class TemplateDataMassagerTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
-     * @covers ::doRenaming
+     * @covers ::doRemapping
      * @uses \Jtp\TemplateDataMassage::__invoke
+     * @uses \Jtp\TemplateDataMassage::getMappedName
+     * @uses \Jtp\TemplateDataMassage::renameTypes
      */
     public function testCanRenameNamespace()
     {
@@ -62,7 +66,7 @@ class TemplateDataMassagerTest extends \PHPUnit_Framework_TestCase
     /**
      * @covers ::renameTypes
      * @uses \Jtp\TemplateDataMassage::__invoke
-     * @uses \Jtp\TemplateDataMassage::doRenaming
+     * @uses \Jtp\TemplateDataMassage::doRemapping
      * @uses \Jtp\TemplateDataMassage::getMappedName
      */
     public function testCanRenameProperty()
@@ -84,10 +88,9 @@ class TemplateDataMassagerTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
-     * @covers ::doRenaming
+     * @covers ::getMappedName
      * @uses \Jtp\TemplateDataMassage::__invoke
-     * @uses \Jtp\TemplateDataMassage::doRenaming
-     * @uses \Jtp\TemplateDataMassage::getMappedName
+     * @uses \Jtp\TemplateDataMassage::doRemapping
      * @uses \Jtp\TemplateDataMassage::renameTypes
      */
     public function testCanRenameFullName()
@@ -109,8 +112,9 @@ class TemplateDataMassagerTest extends \PHPUnit_Framework_TestCase
 
     /**
      * @covers ::renameTypes
+     * @covers ::getMappedType
      * @uses \Jtp\TemplateDataMassage::__invoke
-     * @uses \Jtp\TemplateDataMassage::doRenaming
+     * @uses \Jtp\TemplateDataMassage::doRemapping
      * @uses \Jtp\TemplateDataMassage::getMappedName
      */
     public function testWillRenamePropertyArrayType()
@@ -128,7 +132,7 @@ class TemplateDataMassagerTest extends \PHPUnit_Framework_TestCase
                     'isCustomType' => false,
                     'paramType' => 'array',
                     'value' => [],
-                    'arrayType' => 'Company\NEmployee\Departments',
+                    'arrayType' => 'Company\\NEmployee\\Departments',
                     'namespace' => 'Company',
                 ]
             ]
@@ -145,7 +149,8 @@ class TemplateDataMassagerTest extends \PHPUnit_Framework_TestCase
     /**
      * @covers ::renameTypes
      * @uses \Jtp\TemplateDataMassage::__invoke
-     * @uses \Jtp\TemplateDataMassage::doRenaming
+     * @uses \Jtp\TemplateDataMassage::doRemapping
+     * @uses \Jtp\TemplateDataMassage::getMappedName
      */
     public function testWillRenamePropertyNamespace()
     {
@@ -175,8 +180,10 @@ class TemplateDataMassagerTest extends \PHPUnit_Framework_TestCase
 
     /**
      * @covers ::renameTypes
+     * @covers ::getMappedType
      * @uses \Jtp\TemplateDataMassage::__invoke
-     * @uses \Jtp\TemplateDataMassage::doRenaming
+     * @uses \Jtp\TemplateDataMassage::doRemapping
+     * @uses \Jtp\TemplateDataMassage::getMappedName
      */
     public function testWillRenamePropertyParamType()
     {

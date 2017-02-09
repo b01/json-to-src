@@ -1,4 +1,4 @@
-<?php
+<?php namespace Jtp\Tests;
 
 use Jtp\TemplateDataMassage;
 
