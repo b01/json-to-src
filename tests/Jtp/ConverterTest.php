@@ -165,8 +165,7 @@ class ConverterTest extends \PHPUnit_Framework_TestCase
         $jsonString = '{"prop":1234}';
         $className = 'Test';
         $namespace = 'T';
-        $fixture = TEST_TEMP_DIR
-            . DIRECTORY_SEPARATOR . 'T'
+        $fixture = $this->unitDir . 'T'
             . DIRECTORY_SEPARATOR . 'Test.php';
 
         if (file_exists($fixture)) {
@@ -195,7 +194,7 @@ class ConverterTest extends \PHPUnit_Framework_TestCase
         $converter = new Converter($this->mockClassParser);
         $converter->setClassTemplate($this->mockTwigTemplate);
         $converter->generateSource($jsonString, $className, $namespace);
-        $converter->save(TEST_TEMP_DIR);
+        $converter->save($this->unitDir);
 
         $acutal = file_get_contents($fixture);
 
@@ -565,7 +564,7 @@ class ConverterTest extends \PHPUnit_Framework_TestCase
     public function testCannotSaveUnitTestToNonExistingDirectory()
     {
         $converter = new Converter($this->mockClassParser);
-        $converter->save(TEST_TEMP_DIR, 'TEST_TEMP_DIR');
+        $converter->save($this->unitDir, 'TEST_TEMP_DIR');
     }
 
     /**
@@ -605,7 +604,8 @@ class ConverterTest extends \PHPUnit_Framework_TestCase
         $converter = new Converter($this->mockClassParser);
         $converter->generateSource($jsonString, $className);
 
-        $this->assertTrue($converter->saveMapFile(TEST_TEMP_DIR));
+        $this->assertTrue($converter->saveMapFile($this->unitDir));
+        unlink($this->unitDir . 'map.php');
     }
 }
 ?>
