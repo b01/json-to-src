@@ -154,17 +154,26 @@ class Converter
             . "<?php\n\$map = [\n";
 
         $namespaces = "// Namespaces\n";
+        // Used to track which namespace have benn added son they are only
+        // added once.
+        $ns = [];
 
         foreach($this->mapData as $key => $class) {
-            if (!empty($class['classNamespace'])) {
-                $nameSpace = str_replace('\\', '\\\\', $class['classNamespace']);
-                $namespaces .= "\t'{$nameSpace}' => '{$nameSpace}',\n";
-            }
-
+            // Class
             $map .= "\t'{$key}' => '{$class['name']}',\n";
 
+            // Class properties
             foreach($class['properties'] as $property) {
                 $map .= "\t'{$key}::\${$property['name']}' => '{$property['name']}',\n";
+            }
+
+            // Namespace
+            $nameSpace = str_replace('\\', '\\\\', $class['classNamespace']);
+
+            // When not empty, add the namespace, but only once.
+            if (!empty($class['classNamespace']) && !in_array($nameSpace, $ns)) {
+                $namespaces .= "\t'{$nameSpace}' => '{$nameSpace}',\n";
+                $ns[] = $namespaces;
             }
         }
 
