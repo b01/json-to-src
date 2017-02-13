@@ -95,13 +95,13 @@ try {
 
     $preRenderCallback = null;
 
-    // Pre-template callback function
+    // Load a class that can filter data just before source is generated.
     if (file_exists($callbackScript)) {
         $preRenderCallback = require_once $callbackScript;
     }
 
-    if (class_exists('JtpDataMassage')) {
-        $preRenderCallback = new JtpDataMassage();
+    if (class_exists('JtpFilter')) {
+        $preRenderCallback = new JtpFilter();
         $converter->withPreRenderCallback([$preRenderCallback, '__invoke']);
     } elseif (is_callable($preRenderCallback)) {
         $converter->withPreRenderCallback($preRenderCallback);

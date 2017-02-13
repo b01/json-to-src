@@ -1,13 +1,13 @@
-<?php namespace Jtp\Tests;
+<?php
 
-use Jtp\TemplateDataMassage;
+use Jtp\Filter;
 
 /**
  * Class JtpDataMassage
  *
  * @package \Jtp\Tests\Mocks
  */
-class JtpDataMassage extends TemplateDataMassage
+class JtpFilter extends Filter
 {
     protected $map = [
         'Address' => 'Address',

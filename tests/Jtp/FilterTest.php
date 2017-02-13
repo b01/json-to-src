@@ -1,30 +1,24 @@
 <?php namespace Jtp\Tests;
 
-require_once MOCK_DIR . '/JtpDataMassage7.php';
+require_once MOCK_DIR . '/JtpFilter7.php';
 
 /**
- * Class TemplateDataMassagerTest
+ * Class FilterTest
  *
  * @package \Jtp\Tests
- * @coversDefaultClass \Jtp\TemplateDataMassage
+ * @coversDefaultClass \Jtp\Filter
  */
-class TemplateDataMassagerTest extends \PHPUnit_Framework_TestCase
+class FilterTest extends \PHPUnit_Framework_TestCase
 {
-    public function setUp()
-    {
-        parent::setUp();
-        $this->jtpDataMassage = new JtpDataMassage();
-    }
-
     /**
      * @covers ::__invoke
-     * @uses \Jtp\TemplateDataMassage::doRemapping()
-     * @uses \Jtp\TemplateDataMassage::getMappedName
-     * @uses \Jtp\TemplateDataMassage::renameTypes
+     * @uses \Jtp\Filter::doRemapping()
+     * @uses \Jtp\Filter::getMappedName
+     * @uses \Jtp\Filter::renameTypes
      */
     public function testCanRenameAClass()
     {
-        $jtpDataMassage = new JtpDataMassage();
+        $jtpFilter = new JtpFilter();
         $classKey = 'Location';
         $fixture = [
             'name' => 'Location',
@@ -33,21 +27,21 @@ class TemplateDataMassagerTest extends \PHPUnit_Framework_TestCase
             'properties' => []
         ];
 
-        $jtpDataMassage->setMapName($classKey, 'Loc');
-        $actual = $jtpDataMassage($classKey, $fixture);
+        $jtpFilter->setMapName($classKey, 'Loc');
+        $actual = $jtpFilter($classKey, $fixture);
 
         $this->assertEquals('Loc', $actual['name']);
     }
 
     /**
      * @covers ::doRemapping
-     * @uses \Jtp\TemplateDataMassage::__invoke
-     * @uses \Jtp\TemplateDataMassage::getMappedName
-     * @uses \Jtp\TemplateDataMassage::renameTypes
+     * @uses \Jtp\Filter::__invoke
+     * @uses \Jtp\Filter::getMappedName
+     * @uses \Jtp\Filter::renameTypes
      */
     public function testCanRenameNamespace()
     {
-        $jtpDataMassage = new JtpDataMassage();
+        $jtpFilter = new JtpFilter();
         $classKey = 'Location';
         $namespaceKey = 'Foos';
         $fixture = [
@@ -57,21 +51,21 @@ class TemplateDataMassagerTest extends \PHPUnit_Framework_TestCase
             'properties' => []
         ];
 
-        $jtpDataMassage->setMapName($namespaceKey, 'Foo');
-        $actual = $jtpDataMassage($classKey, $fixture);
+        $jtpFilter->setMapName($namespaceKey, 'Foo');
+        $actual = $jtpFilter($classKey, $fixture);
 
         $this->assertEquals('Foo', $actual['classNamespace']);
     }
 
     /**
      * @covers ::renameTypes
-     * @uses \Jtp\TemplateDataMassage::__invoke
-     * @uses \Jtp\TemplateDataMassage::doRemapping
-     * @uses \Jtp\TemplateDataMassage::getMappedName
+     * @uses \Jtp\Filter::__invoke
+     * @uses \Jtp\Filter::doRemapping
+     * @uses \Jtp\Filter::getMappedName
      */
     public function testCanRenameProperty()
     {
-        $jtpDataMassage = new JtpDataMassage();
+        $jtpFilter = new JtpFilter();
         $fixture = [
             'name' => 'Employees',
             'fullName' => 'Company\\Employees',
@@ -81,21 +75,21 @@ class TemplateDataMassagerTest extends \PHPUnit_Framework_TestCase
             ]
         ];
 
-        $jtpDataMassage->setMapName('Employees::$first_name', 'firstName');
-        $actual = $jtpDataMassage('Employees', $fixture);
+        $jtpFilter->setMapName('Employees::$first_name', 'firstName');
+        $actual = $jtpFilter('Employees', $fixture);
 
         $this->assertEquals('firstName', $actual['properties'][0]['name']);
     }
 
     /**
      * @covers ::getMappedName
-     * @uses \Jtp\TemplateDataMassage::__invoke
-     * @uses \Jtp\TemplateDataMassage::doRemapping
-     * @uses \Jtp\TemplateDataMassage::renameTypes
+     * @uses \Jtp\Filter::__invoke
+     * @uses \Jtp\Filter::doRemapping
+     * @uses \Jtp\Filter::renameTypes
      */
     public function testCanRenameFullName()
     {
-        $jtpDataMassage = new JtpDataMassage();
+        $jtpFilter = new JtpFilter();
         $fixture = [
             'name' => 'Bars',
             'fullName' => 'Foo\\Bars',
@@ -103,8 +97,8 @@ class TemplateDataMassagerTest extends \PHPUnit_Framework_TestCase
             'properties' => []
         ];
 
-        $jtpDataMassage->setMapName('Bars', 'Bar');
-        $data = $jtpDataMassage('Bars', $fixture);
+        $jtpFilter->setMapName('Bars', 'Bar');
+        $data = $jtpFilter('Bars', $fixture);
         $actual = $data['classNamespace'] . '\\' . $data['name'];
 
         $this->assertEquals('Foo\\Bar', $actual);
@@ -113,13 +107,13 @@ class TemplateDataMassagerTest extends \PHPUnit_Framework_TestCase
     /**
      * @covers ::renameTypes
      * @covers ::getMappedType
-     * @uses \Jtp\TemplateDataMassage::__invoke
-     * @uses \Jtp\TemplateDataMassage::doRemapping
-     * @uses \Jtp\TemplateDataMassage::getMappedName
+     * @uses \Jtp\Filter::__invoke
+     * @uses \Jtp\Filter::doRemapping
+     * @uses \Jtp\Filter::getMappedName
      */
     public function testWillRenamePropertyArrayType()
     {
-        $jtpDataMassage = new JtpDataMassage();
+        $jtpFilter = new JtpFilter();
         $fixture = [
             'name' => 'Employee',
             'fullName' => 'Company\\Employee',
@@ -139,9 +133,9 @@ class TemplateDataMassagerTest extends \PHPUnit_Framework_TestCase
             ]
         ];
 
-        $jtpDataMassage->setMapName('Company\\NEmployee', 'Company');
-        $jtpDataMassage->setMapName('Departments', 'Department');
-        $data = $jtpDataMassage('Employee', $fixture);
+        $jtpFilter->setMapName('Company\\NEmployee', 'Company');
+        $jtpFilter->setMapName('Departments', 'Department');
+        $data = $jtpFilter('Employee', $fixture);
         $actual = $data['properties'][0]['arrayType'];
 
         $this->assertEquals('Company\\Department', $actual);
@@ -149,13 +143,13 @@ class TemplateDataMassagerTest extends \PHPUnit_Framework_TestCase
 
     /**
      * @covers ::renameTypes
-     * @uses \Jtp\TemplateDataMassage::__invoke
-     * @uses \Jtp\TemplateDataMassage::doRemapping
-     * @uses \Jtp\TemplateDataMassage::getMappedName
+     * @uses \Jtp\Filter::__invoke
+     * @uses \Jtp\Filter::doRemapping
+     * @uses \Jtp\Filter::getMappedName
      */
     public function testWillRenamePropertyNamespace()
     {
-        $jtpDataMassage = new JtpDataMassage();
+        $jtpFilter = new JtpFilter();
         $fixture = [
             'name' => 'Department',
             'classNamespace' => 'Company\\NEmployees',
@@ -172,8 +166,8 @@ class TemplateDataMassagerTest extends \PHPUnit_Framework_TestCase
             ]
         ];
 
-        $jtpDataMassage->setMapName('Company\\NEmployees', 'Company');
-        $data = $jtpDataMassage('Department', $fixture);
+        $jtpFilter->setMapName('Company\\NEmployees', 'Company');
+        $data = $jtpFilter('Department', $fixture);
         $actual = $data['properties'][0]['namespace'];
 
         $this->assertEquals('Company', $actual);
@@ -182,13 +176,13 @@ class TemplateDataMassagerTest extends \PHPUnit_Framework_TestCase
     /**
      * @covers ::renameTypes
      * @covers ::getMappedType
-     * @uses \Jtp\TemplateDataMassage::__invoke
-     * @uses \Jtp\TemplateDataMassage::doRemapping
-     * @uses \Jtp\TemplateDataMassage::getMappedName
+     * @uses \Jtp\Filter::__invoke
+     * @uses \Jtp\Filter::doRemapping
+     * @uses \Jtp\Filter::getMappedName
      */
     public function testWillRenamePropertyParamType()
     {
-        $jtpDataMassage = new JtpDataMassage();
+        $jtpFilter = new JtpFilter();
         $fixture = [
             'name' => 'Department',
             'classNamespace' => 'Company\\NEmployees',
@@ -205,8 +199,8 @@ class TemplateDataMassagerTest extends \PHPUnit_Framework_TestCase
             ]
         ];
 
-        $jtpDataMassage->setMapName('Company\\NEmployees', 'Company');
-        $data = $jtpDataMassage('Department', $fixture);
+        $jtpFilter->setMapName('Company\\NEmployees', 'Company');
+        $data = $jtpFilter('Department', $fixture);
         $actual = $data['properties'][0]['paramType'];
 
         $this->assertEquals('Company\\Location', $actual);

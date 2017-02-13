@@ -1,11 +1,11 @@
 <?php namespace Jtp;
 
 /**
- * Class TemplateDataMassage
+ * Class Filter
  *
  * @package \Jtp
  */
-abstract class TemplateDataMassage
+abstract class Filter
 {
     /** @var array */
     protected $map = [];
