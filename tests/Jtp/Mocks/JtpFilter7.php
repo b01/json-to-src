@@ -10,9 +10,6 @@ use Jtp\Filter;
 class JtpFilter extends Filter
 {
     protected $map = [
-        'Address' => 'Address',
-        'Location_1' => 'Location1',
-        'Address_1' => 'Address1',
         'Address_1::$address_line_1' => 'addressLine1',
         'Address_1::$address_line_2' => 'addressLine2',
         'Address_1::$zip_code' => 'zipCode',
@@ -20,9 +17,10 @@ class JtpFilter extends Filter
         'Employee::$first_name' => 'firstName',
         'Employee::$last_name' => 'lastName',
 // Namespaces
-        'Company\\NEmployee\\NLocation' => 'Company\\Employees\\Locations',
-        'Company\\NEmployee\\NDepartments' => 'Company\\Departments',
+        'Company\\NEmployee\\NLocation' => 'Company\\Employees\\Location',
         'Company\\NEmployee' => 'Company\\Employees',
+        'Company\\NEmployee\\NDepartments' => 'Company\\Departments',
+        'Company' => 'Company',
     ];
 
     public function setMapName($key, $value)

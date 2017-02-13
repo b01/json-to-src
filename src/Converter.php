@@ -160,7 +160,13 @@ class Converter
 
         foreach($this->mapData as $key => $class) {
             // Class
-            $map .= "\t'{$key}' => '{$class['name']}',\n";
+//            if (empty($class['classNamespace'])) {
+                $map .= "\t'{$key}' => '{$class['name']}',\n";
+//            } else {
+//                $c1 = str_replace('\\', '\\\\', $class['classNamespace'])
+//                    . '\\\\' . $class['name'];
+//                $map .= "\t'{$key}' => '{$c1}',\n";
+//            }
 
             // Class properties
             foreach($class['properties'] as $property) {
