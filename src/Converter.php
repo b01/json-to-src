@@ -173,7 +173,7 @@ class Converter
             // When not empty, add the namespace, but only once.
             if (!empty($class['classNamespace']) && !in_array($nameSpace, $ns)) {
                 $namespaces .= "\t'{$nameSpace}' => '{$nameSpace}',\n";
-                $ns[] = $namespaces;
+                $ns[] = $nameSpace;
             }
         }
 

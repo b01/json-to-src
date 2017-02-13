@@ -21,7 +21,7 @@ class JtpFilter extends Filter
         'Employee::$last_name' => 'lastName',
 // Namespaces
         'Company\\NEmployee\\NLocation' => 'Company\\Employees\\Locations',
-        'Company\\NEmployee\\NDepartments' => 'Company\\Employees\\Departments',
+        'Company\\NEmployee\\NDepartments' => 'Company\\Departments',
         'Company\\NEmployee' => 'Company\\Employees',
     ];
 
