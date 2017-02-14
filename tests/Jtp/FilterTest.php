@@ -2,6 +2,8 @@
 
 require_once MOCK_DIR . '/JtpFilter7.php';
 
+use JtpFilter;
+
 /**
  * Class FilterTest
  *
