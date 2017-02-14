@@ -1,7 +1,7 @@
 # Directories
 #------------
 /.idea/
-/.phpunit/
+/$CIRCLE_TEST_REPORTS/
 /.vscode/
 /vendor/
 /nbproject/
