@@ -10,7 +10,7 @@ use {{ fullClassName }};{{ useStmts }}
  *
  * @coversDefaultClass \{{fullClassName}}
  */
-class {{ name }}Tests extends \PHPUnit_Framework_TestCase
+class {{ name }}Test extends \PHPUnit\Framework\TestCase
 {
     /**
      * @covers ::__construct
@@ -46,8 +46,8 @@ class {{ name }}Tests extends \PHPUnit_Framework_TestCase
         ->disableOriginalConstructor()
         ->getMock();
 
-        $subject->set{{classProp.name|ucfirst}}($mock);
-        $actual = $subject->get{{classProp.name|ucfirst}}();
+        $subject->set{{ classProp.name|ucfirst }}($mock);
+        $actual = $subject->get{{ classProp.name|ucfirst }}();
 
         $this->assertInstanceOf(\{{ getFullNameSpace(classNamespace, classProp.type) }}::class, $actual);
     {% else -%}
