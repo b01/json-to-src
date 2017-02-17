@@ -11,7 +11,7 @@ use Twig_SimpleFilter;
  * @package \Jtp\Tests
  * @coversDefaultClass \Jtp\TwigTools
  */
-class TwigToolsTest extends \PHPUnit_Framework_TestCase
+class TwigToolsTest extends \PHPUnit\Framework\TestCase
 {
     /**
      * @covers ::__construct

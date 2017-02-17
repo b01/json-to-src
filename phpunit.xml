@@ -5,14 +5,14 @@
          beStrictAboutChangesToGlobalState="true"
          beStrictAboutOutputDuringTests="true"
          beStrictAboutTestsThatDoNotTestAnything="true"
-         bootstrap="tests/phpunit.php"
+         bootstrap="test/phpunit.php"
          colors="auto"
          forceCoversAnnotation="true"
          mapTestClassNameToCoveredClassName="true"
          verbose="true">
     <testsuites>
         <testsuite name="All">
-            <directory>tests/Jtp</directory>
+            <directory>test/Jtp</directory>
         </testsuite>
     </testsuites>
     <filter>
@@ -25,6 +25,7 @@
     </filter>
     <logging>
         <log type="coverage-text" target="php://stdout" showUncoveredFiles="false" />
-        <!--<log type="junit" target="$CIRCLE_TEST_REPORTS/phpunit/junit.xml" />-->
+        <log type="coverage-clover" target=".phpunit/coverage.xml" />
+        <log type="junit" target=".phpunit/junit.xml" />
     </logging>
 </phpunit>

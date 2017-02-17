@@ -8,7 +8,7 @@ use Twig_Template;
  * @coversDefaultClass \Jtp\Converter
  * @backupStaticAttributes disabled
  */
-class ConverterTest extends \PHPUnit_Framework_TestCase
+class ConverterTest extends \PHPUnit\Framework\TestCase
 {
     /** @var \Twig_TemplateWrapper|\PHPUnit_Framework_MockObject_MockBuilder */
     private $mockClassParser;

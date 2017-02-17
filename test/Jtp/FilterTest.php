@@ -10,7 +10,7 @@ use JtpFilter;
  * @package \Jtp\Tests
  * @coversDefaultClass \Jtp\Filter
  */
-class FilterTest extends \PHPUnit_Framework_TestCase
+class FilterTest extends \PHPUnit\Framework\TestCase
 {
     /**
      * @covers ::__invoke

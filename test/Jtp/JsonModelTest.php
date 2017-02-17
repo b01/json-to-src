@@ -10,7 +10,7 @@ use Jtp\Tests\Mocks\ModelT;
  * @package \Jtp\Tests\Models
  * @coversDefaultClass \Jtp\JsonModel
  */
-class JsonModelTest extends \PHPUnit_Framework_TestCase
+class JsonModelTest extends \PHPUnit\Framework\TestCase
 {
     /** @var \Jtp\JsonModel|\PHPUnit_Framework_MockObject_MockObject */
     private $model;
@@ -36,11 +36,8 @@ class JsonModelTest extends \PHPUnit_Framework_TestCase
      */
     public function testCanInvalidateProperty()
     {
-        $this->setExpectedException(
-            JtpException::class,
-            '',
-            JtpException::PROPERTY_EMPTY
-        );
+        $this->expectException(JtpException::class);
+        $this->expectExceptionCode(JtpException::PROPERTY_EMPTY);
 
         $this->model->validateProperty('test', 'NULL', null);
     }
@@ -50,11 +47,8 @@ class JsonModelTest extends \PHPUnit_Framework_TestCase
      */
     public function testCanInvalidatePropertyType()
     {
-        $this->setExpectedException(
-            JtpException::class,
-            '',
-            JtpException::BAD_PROPERTY_TYPE
-        );
+        $this->expectException(JtpException::class);
+        $this->expectExceptionCode(JtpException::BAD_PROPERTY_TYPE);
 
         $this->model->validateProperty('test', 'integer', '1');
     }

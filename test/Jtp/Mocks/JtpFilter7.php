@@ -19,8 +19,7 @@ class JtpFilter extends Filter
 // Namespaces
         'Company\\NEmployee\\NLocation' => 'Company\\Employees\\Location',
         'Company\\NEmployee' => 'Company\\Employees',
-        'Company\\NEmployee\\NDepartments' => 'Company\\Departments',
-        'Company' => 'Company',
+        'Company\\NEmployee\\NDepartments' => 'Company\\Departments'
     ];
 
     public function setMapName($key, $value)

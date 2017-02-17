@@ -5,7 +5,7 @@ use Jtp\StdClassParser;
 /**
  * @coversDefaultClass \Jtp\StdClassParser
  */
-class StdClassParserTest extends \PHPUnit_Framework_TestCase
+class StdClassParserTest extends \PHPUnit\Framework\TestCase
 {
 
     /**
