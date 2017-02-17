@@ -259,4 +259,59 @@ class TwigToolsTest extends \PHPUnit\Framework\TestCase
 
         $this->assertEquals($expected, $actual);
     }
+
+    /**
+     * @covers ::getReturnType
+     * @uses \Jtp\TwigTools::__construct
+     */
+    public function testCanGetReturnTypeOfArrayType()
+    {
+        $fixture = [
+            'paramType' => 'array',
+            'arrayType' => 'Foo',
+        ];
+        $tt = new TwigTools();
+
+        $expected ='array of \\Foo';
+        $actual = $tt->getReturnType($fixture);
+
+        $this->assertEquals($expected, $actual);
+    }
+
+    /**
+     * @covers ::getReturnType
+     * @uses \Jtp\TwigTools::__construct
+     */
+    public function testCanGetReturnTypeOfCustomType()
+    {
+        $fixture = [
+            'paramType' => 'Foo',
+            'isCustomType' => true,
+        ];
+        $tt = new TwigTools();
+
+        $expected ='\\Foo';
+        $actual = $tt->getReturnType($fixture);
+
+        $this->assertEquals($expected, $actual);
+    }
+
+    /**
+     * @covers ::getReturnType
+     * @uses \Jtp\TwigTools::__construct
+     */
+    public function testCanGetReturnTypeOfParamType()
+    {
+        $fixture = [
+            'arrayType' => '',
+            'paramType' => 'string',
+            'isCustomType' => false,
+        ];
+        $tt = new TwigTools();
+
+        $expected ='string';
+        $actual = $tt->getReturnType($fixture);
+
+        $this->assertEquals($expected, $actual);
+    }
 }
