@@ -124,7 +124,7 @@ class TwigTools extends Twig_Extension
         } else if (!$this->doScalarTypeHints && is_scalar($property['value'])) {
             // Remove scalar type hints.
             $output = '';
-        } else if ($property['isCustomType']) {
+        } else if ($property['isCustomType'] === true) {
             // Prefix the namespace to custom types.
             $output = '\\' . $output;
         }

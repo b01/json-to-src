@@ -276,10 +276,10 @@ class StdClassParser
             ];
             //
             $aryType[$rCount] = $classKey;
-        }
 
-        if (self::isDebugOn()) {
-            $this->debugParseClasses($rCount, $properties);
+            if (self::isDebugOn()) {
+                $this->debugParseClasses($rCount, $properties);
+            }
         }
 
         return $classes;
