@@ -10,9 +10,9 @@
  * @return array
  */
 function getArg(
-    int $index,
+    $index,
     array & $arguments,
-    string $key = null,
+    $key = null,
     array & $switches = null,
     $default = null
 ) {

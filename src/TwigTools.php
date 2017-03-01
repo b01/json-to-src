@@ -1,6 +1,4 @@
-<?php
-
-namespace Jtp;
+<?php namespace Jtp;
 
 use Twig_Extension;
 use Twig_SimpleFilter;
@@ -34,9 +32,7 @@ class TwigTools extends Twig_Extension
         return [
             'ucfirst' => new Twig_SimpleFilter(
                 'ucfirst',
-                function ($arg) {
-                    return ucfirst($arg);
-                }
+                [$this, 'capFirst']
             )
         ];
     }
@@ -63,15 +59,17 @@ class TwigTools extends Twig_Extension
                 'getPropStmt',
                 [$this, 'getPropStmt']
             ),
+            'getReturnType' => new Twig_SimpleFunction(
+                'getReturnType',
+                [$this, 'getReturnType']
+            ),
             'getVarType' => new Twig_SimpleFunction(
                 'getVarType',
                 [$this, 'getVarType']
             ),
             'getYear' => new Twig_SimpleFunction(
                 'getYear',
-                function () {
-                    return (string)date('Y');
-                }
+                [$this, 'getYear']
             )
         ];
     }
@@ -114,24 +112,21 @@ class TwigTools extends Twig_Extension
      * Get the function parameter type.
      *
      * @param array $property
-     * @param string $namespace
      * @return mixed|string
      */
-    public function getFuncType(array $property, $namespace = '')
+    public function getFuncType(array $property)
     {
         $output = $property['paramType'] . ' ';
 
-        if ($property['paramType'] == 'array'
+        if ($property['paramType'] === 'array'
             && !empty($property['arrayType'])) {
             $output = $property['arrayType'] . ' ';
         } else if (!$this->doScalarTypeHints && is_scalar($property['value'])) {
             // Remove scalar type hints.
             $output = '';
-        }
-
-        // Prefix the namespace to custom types.
-        if ($property['isCustomType'] && !empty($namespace)) {
-            $output = '\\' . $namespace . '\\' . $output;
+        } else if ($property['isCustomType'] === true) {
+            // Prefix the namespace to custom types.
+            $output = '\\' . $output;
         }
 
         return $output;
@@ -164,33 +159,68 @@ class TwigTools extends Twig_Extension
     }
 
     /**
+     * Get the year.
+     *
+     * @return string
+     */
+    public function getYear()
+    {
+        return (string) date('Y');
+    }
+
+    /**
      * Produce a string of $this->{property} = {value};
      *
      * @param array $prop
-     * @param string $namespace
      * @return string
      */
-    public function getVarType(array $prop, $namespace = '')
+    public function getVarType(array $prop)
     {
         $output = '';
 
         if (!empty($prop['arrayType'])) {
-            $output = '@var '. $prop['paramType'];// . ' of \\' . $namespace . '\\' . $prop['arrayType'];
-            if (!empty($namespace)) {
-                $output .= ' of \\' .$namespace;
-            }
-            $output .= '\\' . $prop['arrayType'];
+            $output = '@var '. $prop['paramType'] . ' of \\' . $prop['arrayType'];
         } else if ($prop['isCustomType'] === true) {
-            $output = '@var ';
-            if (!empty($namespace)) {
-                $output .= '\\' . $namespace;
-            }
-            $output .= '\\' . $prop['paramType'];
+            $output = '@var \\' . $prop['paramType'];
         } else if (!empty($prop['paramType'])) {
             $output = '@var ' . $prop['paramType'];
         }
 
         return $output;
+    }
+
+
+    /**
+     * Get the doc-block return type.
+     *
+     * @param array $prop
+     * @return string
+     */
+    public function getReturnType(array $prop)
+    {
+        $output = '';
+
+        if (!empty($prop['arrayType'])) {
+            $output = $prop['paramType'] . ' of \\' . $prop['arrayType'];
+        } else if ($prop['isCustomType'] === true) {
+            $output = '\\' . $prop['paramType'];
+        } else if (!empty($prop['paramType'])) {
+            $output = $prop['paramType'];
+        }
+
+        return $output;
+    }
+    /**
+     * Capitalize on the first letter of a word.
+     *
+     * Wrapper for Twig.
+     *
+     * @param string $word
+     * @return string
+     */
+    public function capFirst($word)
+    {
+        return ucfirst($word);
     }
 }
 ?>

@@ -112,7 +112,8 @@ trait JsonModel
      */
     public function validateProperty($property, $type, $value, $class = __CLASS__)
     {
-        if (($aType = gettype($value)) !== $type) {
+        $aType = gettype($value);
+        if ($aType !== $type) {
             throw new JtpException(
                 JtpException::BAD_PROPERTY_TYPE,
                 [$property, $type, $aType]

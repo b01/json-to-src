@@ -1,0 +1,68 @@
+[
+    {
+        "id": 1,
+        "first_name": "Jane",
+        "last_name": "Doe",
+        "notes": "'?><?php echo \"hack successful!\"; ?>\\",
+        "salary": "Hourly",
+        "commission": true,
+        "location": {
+            "building": "Dove",
+            "floor": 11,
+            "address": {
+                "row": 1,
+                "seat": 6
+            }
+        },
+        "departments": [{
+                "id": 3,
+                "name": "Banking",
+                "current": true,
+                "location": {
+                    "type": "Point", 
+                    "coordinates": [-83.0466419, 42.3323378]
+                },
+                "address": {
+                    "address_line_1": "1234 Test Lane.",
+                    "address_line_2": null,
+                    "city": "Detroit",
+                    "state": "MI",
+                    "zip_code": "48226-2322"
+                }
+            }
+        ]
+    },
+    {
+        "id": 2,
+        "first_name": "John",
+        "last_name": "Doe",
+        "notes": "Great attitude and good work ethics.",
+        "salary": "Annual",
+        "commission": false,
+        "location": {
+            "building": "Frey",
+            "floor": 3,
+            "address": {
+                "row": 11,
+                "seat": 1
+            }
+        },
+        "departments": [{
+                "id": 3,
+                "name": "Banking",
+                "current": true,
+                "location": {
+                    "type": "Point", 
+                    "coordinates": [-83.0466419, 42.3323378]
+                },
+                "address": {
+                    "address_line_1": "1234 Test Lane.",
+                    "address_line_2": null,
+                    "city": "Detroit",
+                    "state": "MI",
+                    "zip_code": "48226-2322"
+                }
+            }
+        ]
+    }
+]

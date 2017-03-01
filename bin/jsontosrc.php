@@ -7,7 +7,7 @@ require_once __DIR__
 
 require_once __DIR__ . DIRECTORY_SEPARATOR . 'command-line-helpers.php';
 
-use Jtp\ClassParser;
+use Jtp\StdClassParser;
 use Jtp\Converter;
 use Ulrichsg\Getopt\Getopt;
 
@@ -15,13 +15,14 @@ echo PHP_EOL . 'FYI current working directory is: ' . getcwd() . PHP_EOL;
 
 // Command line option flags.
 $flags = ''
-    . 'n::' // optional namespace.
-    . 'u::' // optional separate unit test directory.
-    . 'a::' // optional default property access level.
-    . 'c::' // optional callback function before template render.
-    . 'r::' // optional recursion limit.
-    . 'v' // optional debug mode.
-    . 't' // optional turn on type hints.
+    . 'n::' // optional Takes a string to use as a namespace.
+    . 'u::' // optional A separate directory to output unit test.
+    . 'a::' // optional Set the property access, the default is "private."
+    . 'c::' // optional A callback function to modify template data before render.
+    . 'r::' // optional Control how deep to go for nested objects, the default is 20.
+    . 'p::' // An optional string to be used as a namespace prefix.
+    . 'v' // optional Add debug messages to the output.
+    . 't' // optional Turn on PHP 7 type hints.
 ;
 
 // Allows us to c
@@ -32,9 +33,9 @@ try {
     echo $err->getMessage() . PHP_EOL;
     exit(2);
 }
+
 $options = $getopt->getOptions();
 $indexArgs = $getopt->getOperands();
-
 $jsonFile = getArg(0, $indexArgs);
 
 if ($jsonFile === null) {
@@ -66,12 +67,14 @@ $unitTestDir = getArg(-1, $indexArgs, 'u', $options, null);
 $accessLvl = getArg(-1, $indexArgs, 'a', $options, 'private');
 $callbackScript = getArg(-1, $indexArgs, 'c', $options, null);
 $recursionLimit = getArg(-1, $indexArgs, 'r', $options, 20);
+$nsPrefix = getArg(-1, $indexArgs, 'p', $options, 'N');
 
 try {
     $jsonString = file_get_contents($jsonFile);
-    ClassParser::setDebugMode($verbosity);
-    $classParser = new ClassParser($recursionLimit);
+    StdClassParser::setDebugMode($verbosity);
+    $classParser = new StdClassParser($recursionLimit);
     $classParser->withAccessLevel($accessLvl);
+    $classParser->withNamespacePrefix($nsPrefix);
 
     // Use a template engine to generate source code string.
     $twigLoader = new Twig_Loader_Filesystem(__DIR__
@@ -90,16 +93,26 @@ try {
     $converter->setClassTemplate($classTemplate)
         ->setUnitTestTemplate($unitTestTemplate);
 
-    // Pre-template callback function
+    $preRenderCallback = null;
+
+    // Load a class that can filter data just before source is generated.
     if (file_exists($callbackScript)) {
         $preRenderCallback = require_once $callbackScript;
+    }
+
+    if (class_exists('JtpFilter')) {
+        $preRenderCallback = new JtpFilter();
+        $converter->withPreRenderCallback([$preRenderCallback, '__invoke']);
+    } elseif (is_callable($preRenderCallback)) {
         $converter->withPreRenderCallback($preRenderCallback);
     }
 
     $converter->generateSource($jsonString, $className, $namespace);
     $converter->save($outDir, $unitTestDir);
+    $converter->saveMapFile($outDir);
+
     echo 'Done' . PHP_EOL;
-} catch (\Exception $error) {
+} catch (Exception $error) {
     echo $error->getMessage() . PHP_EOL;
 }
 

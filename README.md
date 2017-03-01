@@ -41,10 +41,10 @@ Example:
 
 Some things to make note of when using this tool include:
 * Bad characters like "$,-" Will automatically be removed from keys in the JSON file.
-* A field that is an array and has an object as it first element will result in
+* A field that is an array and has an object as its first element will result in
   a class being generated.
 * All objects found will produce a class file, the key that contained that object will be used as the name.
-* Will not source more than one object per key to prevent class name collision.
+* Will generate namespaces for nested objects to prevent class name collision.
 
 Here's a rough idea of how it handles JSON types: 
 
@@ -62,6 +62,10 @@ null | null
 
 #### Composer.json
 ```json
+composer require --dev kshabazz/json-to-src
+
+- or -
+
 {
   "require": {
     "kshabazz/json-to-src": "^1.0"
@@ -158,9 +162,10 @@ jsontosrc -n Tests -c preRenderCallback.php company.json Company tmp
 The "jsontosrc" command line script take several arguments and options.
 
 -n Takes a string to use as a namespace.
--u A directory to output unit test.
+-u A separate directory to output unit test.
 -a Set the property access, the default is "private."
--c callback function before template render.
--d Add debug messages to the output.
+-c A callback function to modify template data before render.
+-r Control how deep to go for nested objects, the default is 20.
+-p An optional string to be used as a namespace prefix.
+-v Add debug messages to the output.
 -t Turn on PHP 7 type hints.
--r Change the recursion limit, default is 20.

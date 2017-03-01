@@ -13,7 +13,7 @@
     },
     "autoload-dev": {
         "psr-4": {
-            "Jtp\\Tests\\": "tests/Jtp/"
+            "Jtp\\Tests\\": "test/Jtp/"
         }
     },
     "bin": ["bin/jsontosrc.php"],
@@ -22,12 +22,12 @@
     "license": "MIT",
     "name": "kshabazz/json-to-src",
     "require": {
-        "php": ">=7.0",
+        "php": ">=5.5",
         "twig/twig": "^1.0",
         "ulrichsg/getopt-php": "^2.0"
     },
     "require-dev": {
-        "phpunit/phpunit": "^5.0"
+        "phpunit/phpunit": ">=4.0"
     },
     "support": {
         "issues": "https://github.com/b01/json-to-src/issues",

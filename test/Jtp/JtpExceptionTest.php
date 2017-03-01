@@ -8,7 +8,7 @@ use PHPUnit_Framework_TestCase;
  *
  * @coversDefaultClass \Jtp\JtpException
  */
-class JtpExceptionTest extends PHPUnit_Framework_TestCase
+class JtpExceptionTest extends \PHPUnit\Framework\TestCase
 {
     /**
      * @covers ::__construct

@@ -3,6 +3,7 @@
 namespace Jtp\Tests;
 
 use Jtp\TwigTools;
+use Twig_SimpleFilter;
 
 /**
  * Class TwigToolsTest
@@ -10,17 +11,29 @@ use Jtp\TwigTools;
  * @package \Jtp\Tests
  * @coversDefaultClass \Jtp\TwigTools
  */
-class TwigToolsTest extends \PHPUnit_Framework_TestCase
+class TwigToolsTest extends \PHPUnit\Framework\TestCase
 {
     /**
-     * @covers ::getFilters
-     * @uses \Jtp\TwigTools::__construct
+     * @covers ::__construct
      */
     public function testCanInitialize()
     {
         $tt = new TwigTools();
 
-        $this->assertTrue(is_array($tt->getFilters()));
+        $this->assertInstanceOf(TwigTools::class, $tt);
+    }
+
+    /**
+     * @covers ::getFilters
+     * @uses \Jtp\TwigTools::__construct
+     */
+    public function testCanGetFilters()
+    {
+        $tt = new TwigTools();
+
+        $filters = $tt->getFilters();
+
+        $this->assertInstanceOf(Twig_SimpleFilter::class, $filters['ucfirst']);
     }
 
     /**
@@ -36,7 +49,7 @@ class TwigToolsTest extends \PHPUnit_Framework_TestCase
 
     /**
      * @covers ::getFuncType
-     * @covers ::__construct
+     * @uses \Jtp\TwigTools::__construct
      */
     public function testCanGetFunctionTypeForProperty()
     {
@@ -47,7 +60,7 @@ class TwigToolsTest extends \PHPUnit_Framework_TestCase
             'paramType' => 'array',
             'arrayType' => 'Test',
             'value' => '[]',
-            'isCustomType' => true
+            'isCustomType' => false
         ];
         $expected = 'Test ';
         $actual = $tt->getFuncType($fixture);
@@ -57,28 +70,7 @@ class TwigToolsTest extends \PHPUnit_Framework_TestCase
 
     /**
      * @covers ::getFuncType
-     * @covers ::__construct
-     */
-    public function testCanGetFunctionTypeForPropertyWithNamespace()
-    {
-        $tt = new TwigTools(true);
-        $fixture = [
-            'name' => 'test',
-            'type' => 'array',
-            'paramType' => 'array',
-            'arrayType' => 'Company',
-            'value' => '[]',
-            'isCustomType' => true
-        ];
-        $expected = '\\Tests\\Company ';
-        $actual = $tt->getFuncType($fixture, 'Tests');
-
-        $this->assertEquals($expected, $actual);
-    }
-
-    /**
-     * @covers ::getFuncType
-     * @covers ::__construct
+     * @uses \Jtp\TwigTools::__construct
      */
     public function testCanOmitTypeHintsForScalars()
     {
@@ -99,7 +91,7 @@ class TwigToolsTest extends \PHPUnit_Framework_TestCase
 
     /**
      * @covers ::getAssignProp
-     * @covers ::__construct
+     * @uses \Jtp\TwigTools::__construct
      */
     public function testGetArrayAssignmentForPropertyOfTypeArray()
     {
@@ -119,7 +111,7 @@ class TwigToolsTest extends \PHPUnit_Framework_TestCase
 
     /**
      * @covers ::getFullNameSpace
-     * @covers ::__construct
+     * @uses \Jtp\TwigTools::__construct
      */
     public function testCanGetFullNamespace()
     {
@@ -131,7 +123,7 @@ class TwigToolsTest extends \PHPUnit_Framework_TestCase
 
     /**
      * @covers ::getPropStmt
-     * @covers ::__construct
+     * @uses \Jtp\TwigTools::__construct
      */
     public function testCanGetPropStmtArray()
     {
@@ -151,7 +143,7 @@ class TwigToolsTest extends \PHPUnit_Framework_TestCase
 
     /**
      * @covers ::getPropStmt
-     * @covers ::__construct
+     * @uses \Jtp\TwigTools::__construct
      */
     public function testCanGetPropStmtString()
     {
@@ -168,7 +160,7 @@ class TwigToolsTest extends \PHPUnit_Framework_TestCase
 
     /**
      * @covers ::getVarType
-     * @covers ::__construct
+     * @uses \Jtp\TwigTools::__construct
      */
     public function testCanGetVarType()
     {
@@ -188,25 +180,25 @@ class TwigToolsTest extends \PHPUnit_Framework_TestCase
 
     /**
      * @covers ::getVarType
-     * @covers ::__construct
+     * @uses \Jtp\TwigTools::__construct
      */
     public function testCanGetVarTypeCustom()
     {
         $tt = new TwigTools(true);
         $fixture = [
             'name' => 'test',
-            'paramType' => 'Bar',
+            'paramType' => 'Tests\\Bar',
             'arrayType' => '',
             'isCustomType' => true
         ];
-        $actual = $tt->getVarType($fixture, 'Tests');
+        $actual = $tt->getVarType($fixture);
 
         $this->assertEquals('@var \\Tests\\Bar', $actual);
     }
 
     /**
      * @covers ::getVarType
-     * @covers ::__construct
+     * @uses \Jtp\TwigTools::__construct
      */
     public function testCanGetVarTypeArray()
     {
@@ -218,6 +210,108 @@ class TwigToolsTest extends \PHPUnit_Framework_TestCase
         ];
         $actual = $tt->getVarType($fixture, 'Tests');
 
-        $this->assertEquals('@var array of \\Tests\\Foo', $actual);
+        $this->assertEquals('@var array of \\Foo', $actual);
+    }
+
+    /**
+     * @covers ::getFuncType
+     * @uses \Jtp\TwigTools::__construct
+     */
+    public function testCanGetFunctionTypeForCustomClassProperty()
+    {
+        $tt = new TwigTools(true);
+        $fixture = [
+            'paramType' => 'T\\Foo',
+            'arrayType' => '',
+            'value' => 'null',
+            'isCustomType' => true
+        ];
+        $expected = '\\T\\Foo ';
+        $actual = $tt->getFuncType($fixture);
+
+        $this->assertEquals($expected, $actual);
+    }
+
+    /**
+     * @covers ::getYear
+     * @uses \Jtp\TwigTools::__construct
+     */
+    public function testCanGetYear()
+    {
+        $tt = new TwigTools();
+
+        $expected = date('Y');
+        $actual = $tt->getYear();
+
+        $this->assertEquals($expected, $actual);
+    }
+
+    /**
+     * @covers ::capFirst
+     * @uses \Jtp\TwigTools::__construct
+     */
+    public function testCanCaptializeWord()
+    {
+        $tt = new TwigTools();
+
+        $expected ='Test';
+        $actual = $tt->capFirst('test');
+
+        $this->assertEquals($expected, $actual);
+    }
+
+    /**
+     * @covers ::getReturnType
+     * @uses \Jtp\TwigTools::__construct
+     */
+    public function testCanGetReturnTypeOfArrayType()
+    {
+        $fixture = [
+            'paramType' => 'array',
+            'arrayType' => 'Foo',
+        ];
+        $tt = new TwigTools();
+
+        $expected ='array of \\Foo';
+        $actual = $tt->getReturnType($fixture);
+
+        $this->assertEquals($expected, $actual);
+    }
+
+    /**
+     * @covers ::getReturnType
+     * @uses \Jtp\TwigTools::__construct
+     */
+    public function testCanGetReturnTypeOfCustomType()
+    {
+        $fixture = [
+            'paramType' => 'Foo',
+            'isCustomType' => true,
+        ];
+        $tt = new TwigTools();
+
+        $expected ='\\Foo';
+        $actual = $tt->getReturnType($fixture);
+
+        $this->assertEquals($expected, $actual);
+    }
+
+    /**
+     * @covers ::getReturnType
+     * @uses \Jtp\TwigTools::__construct
+     */
+    public function testCanGetReturnTypeOfParamType()
+    {
+        $fixture = [
+            'arrayType' => '',
+            'paramType' => 'string',
+            'isCustomType' => false,
+        ];
+        $tt = new TwigTools();
+
+        $expected ='string';
+        $actual = $tt->getReturnType($fixture);
+
+        $this->assertEquals($expected, $actual);
     }
 }

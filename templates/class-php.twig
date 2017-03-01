@@ -1,16 +1,16 @@
-<?php {%- if classNamespace is not empty %} namespace {{classNamespace}};{% endif %}
+<?php {%- if classNamespace is not empty %} namespace {{ classNamespace }};{% endif %}
 {% autoescape false %}
 {% set fullClassName = getFullNameSpace(classNamespace, className) %}
 {{ useStmts }}
 
 /**
- * Class {{className}}
+ * Class {{ name }}
  */
-class {{className}}{{ classAttrs }}
+class {{ name }}{{ classAttrs }}
 {
     {{- traitStmts -}}
 
-    {%- for classProp in classProperties %}
+    {%- for classProp in properties %}
 
     /**
      * {{ getVarType(classProp, classNamespace) }}
@@ -24,19 +24,18 @@ class {{className}}{{ classAttrs }}
     public function __construct()
     {
         {% spaceless %}
-        {% for classProp in classProperties -%}
+        {% for classProp in properties -%}
             {{ getPropStmt(classProp) }}
         {%- endfor %}
         {% endspaceless %}
 
     }
-    {% for classProp in classProperties %}
+    {% for classProp in properties %}
 
     /**
      * Get {{classProp.name}}.
      *
-     *{% if classProp.paramType is not empty %} @return {{ classProp.paramType }}{% endif %}
-
+     * @return {{ getReturnType(classProp) }}
      */
     public function get{{ classProp.name|ucfirst }}()
     {
@@ -48,10 +47,10 @@ class {{className}}{{ classAttrs }}
     /**
      * Set {{classProp.name}}.
      *
-     * @param{% if classProp.paramType is not empty %} {{ classProp.paramType }} {% endif %}${{classProp.name}}
-     * @return \{{fullClassName}}
+     * @param \{{ classProp.arrayType }} ${{classProp.name}}
+     * @return \{{ classProp.arrayType }}
      */
-    public function set{{classProp.name|ucfirst}}({{getFuncType(classProp, classNamespace)}}${{classProp.name}})
+    public function set{{classProp.name|ucfirst}}(\{{ classProp.arrayType }} ${{classProp.name}})
     {
         $this->{{getAssignProp(classProp)}} = ${{classProp.name}};
 
@@ -62,8 +61,8 @@ class {{className}}{{ classAttrs }}
     /**
      * Set {{classProp.name}}.
      *
-     * @param{% if classProp.paramType is not empty %} {{ classProp.paramType }} {% endif %}${{classProp.name}}
-     * @return \{{fullClassName}}
+     * @param{% if classProp.paramType is not empty %} {% if classProp.isCustomType %}\{% endif %}{{ classProp.paramType }} {% endif %}${{classProp.name}}
+     * @return {{ getReturnType(classProp) }}
      */
     public function set{{classProp.name|ucfirst}}({{getFuncType(classProp, classNamespace)}}${{classProp.name}})
     {

@@ -1,18 +1,27 @@
 <?php {%- if classNamespace is not empty %} namespace {{classNamespace}}\Tests; {% endif %}
 
 {% autoescape false %}
-{% set fullClassName = getFullNameSpace(classNamespace, className) %}
+{% set fullClassName = getFullNameSpace(classNamespace, name) %}
 
-use {{fullClassName}};{{ useStmts }}
+use {{ fullClassName }};{{ useStmts }}
 
 /**
- * Class {{className}}Test
+ * Class {{ name }}Test
  *
  * @coversDefaultClass \{{fullClassName}}
  */
-class {{className}}Tests extends \PHPUnit_Framework_TestCase
+class {{ name }}Test extends \PHPUnit\Framework\TestCase
 {
-{% for classProp in classProperties %}
+    /**
+     * @covers ::__construct
+     */
+    public function testCanInitialize{{ name }}()
+    {
+        $subject = new {{ name }}();
+
+        $this->assertInstanceOf({{ name }}::class, $subject);
+    }
+{% for classProp in properties %}
 
     /**
      * @covers ::get{{classProp.name|ucfirst}}
@@ -21,25 +30,28 @@ class {{className}}Tests extends \PHPUnit_Framework_TestCase
      */
     public function testCanSetAndGet{{classProp.name|ucfirst }}()
     {
-        $subject = new {{className}}();
+        $subject = new {{ name }}();
     {% if classProp.arrayType is not empty %}
 
         $mock = $this->getMockBuilder(\{{ getFullNameSpace(classNamespace, classProp.arrayType) }}::class)
             ->disableOriginalConstructor()
             ->getMock();
         $subject->set{{ classProp.name|ucfirst }}($mock);
+        $actual = $subject->get{{classProp.name|ucfirst}}();
+
+        $this->assertInstanceOf(\{{ getFullNameSpace(classNamespace, classProp.arrayType) }}::class, $actual[0]);
     {% elseif classProp.isCustomType %}
 
         $mock = $this->getMockBuilder(\{{ getFullNameSpace(classNamespace, classProp.type) }}::class)
         ->disableOriginalConstructor()
         ->getMock();
 
-        $subject->set{{classProp.name|ucfirst}}($mock);
-        $actual = $subject->get{{classProp.name|ucfirst}}();
+        $subject->set{{ classProp.name|ucfirst }}($mock);
+        $actual = $subject->get{{ classProp.name|ucfirst }}();
 
         $this->assertInstanceOf(\{{ getFullNameSpace(classNamespace, classProp.type) }}::class, $actual);
-    {% else %}
-
+    {% else -%}
+        {% spaceless %}
         {% if classProp.type is same as('boolean') %}
             {% set fixture = 'true' %}
         {% elseif classProp.type is same as('integer') %}
@@ -51,6 +63,8 @@ class {{className}}Tests extends \PHPUnit_Framework_TestCase
         {% else %}
             {% set fixture = classProp.value %}
         {% endif %}
+        {% endspaceless %}
+
         $subject->set{{classProp.name|ucfirst}}({{ fixture }});
 
         $actual = $subject->get{{classProp.name|ucfirst}}();

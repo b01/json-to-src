@@ -1,12 +1,13 @@
 # Directories
 #------------
+/$CIRCLE_TEST_REPORTS/
 /.idea/
 /.phpunit/
 /.vscode/
 /vendor/
 /nbproject/
 /cache/
-/tests/tmp/
+/test/tmp/
 
 # Files
 #------
